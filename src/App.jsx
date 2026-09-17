@@ -1,35 +1,13 @@
 import { useState, useEffect, useMemo } from 'react'
 import './App.css'
-import { collection, onSnapshot, addDoc, doc, updateDoc, deleteDoc } from 'firebase/firestore'
-import { db } from './firebase'
 import { CATS, PRESUPUESTO, COP, calcTotal, emptyForm } from './data'
-import Dashboard from './Dashboard'
-import Registros from './Registros'
-import Modal from './Modal'
-
-function useGastos() {
-  const [gastos, setGastos]   = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const unsub = onSnapshot(collection(db, 'gastos'), (snap) => {
-      setGastos(snap.docs.map((d) => ({ ...d.data(), id: d.id })))
-      setLoading(false)
-    })
-    return unsub
-  }, [])
-
-  const add  = (item) => addDoc(collection(db, 'gastos'), {
-    ...item, precio_unitario: +item.precio_unitario,
-    cantidad: +(item.cantidad || 1), metros: +(item.metros || 0),
-  })
-  const save = ({ id, ...data }) => updateDoc(doc(db, 'gastos', id), {
-    ...data, precio_unitario: +data.precio_unitario,
-    cantidad: +(data.cantidad || 1), metros: +(data.metros || 0),
-  })
-  const remove = (id) => deleteDoc(doc(db, 'gastos', id))
-  return { gastos, loading, add, save, remove }
-}
+import { subscribeGastos, addGasto, updateGasto, deleteGasto } from './services/gastos'
+import { subscribeCatalogo } from './services/catalogo'
+import Dashboard    from './Dashboard'
+import Registros    from './Registros'
+import Catalogo     from './Catalogo'
+import Trabajadores from './Trabajadores'
+import Modal        from './Modal'
 
 function exportCSV(gastos) {
   const cols = ['# Factura','Descripcion','Categoria','Unidad','Precio Unitario','Metros','Cantidad','Total','Fecha','Notas']
@@ -41,16 +19,23 @@ function exportCSV(gastos) {
   ])
   const csv = [cols, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n')
   const blob = new Blob(['﻿'+csv], { type: 'text/csv;charset=utf-8;' })
-  const url = URL.createObjectURL(blob)
-  const a = document.createElement('a'); a.href=url; a.download='gastos_finca.csv'; a.click()
+  const url  = URL.createObjectURL(blob)
+  const a    = document.createElement('a'); a.href=url; a.download='gastos_finca.csv'; a.click()
   URL.revokeObjectURL(url)
 }
 
 function Sidebar({ tab, setTab, gastos, onAdd }) {
   const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
-  const restante = PRESUPUESTO - totalGastado
-  const pct = Math.min((totalGastado / PRESUPUESTO) * 100, 100)
+  const restante  = PRESUPUESTO - totalGastado
+  const pct       = Math.min((totalGastado / PRESUPUESTO) * 100, 100)
   const fillClass = pct > 90 ? 'over' : pct > 70 ? 'warn' : ''
+
+  const NAV = [
+    { id: 'dashboard',    icon: '📊', label: 'Dashboard',  badge: null },
+    { id: 'registros',    icon: '📋', label: 'Registros',  badge: gastos.length },
+    { id: 'catalogo',     icon: '🧱', label: 'Catálogo',   badge: null },
+    { id: 'trabajadores', icon: '👷', label: 'Personal',   badge: null },
+  ]
 
   return (
     <aside className="sidebar">
@@ -72,47 +57,57 @@ function Sidebar({ tab, setTab, gastos, onAdd }) {
 
       <div className="sidebar-nav">
         <div className="sidebar-nav-label">Menú</div>
-        <button className={`nav-item ${tab === 'dashboard' ? 'active' : ''}`} onClick={() => setTab('dashboard')}>
-          <span className="nav-item-icon">📊</span>
-          Dashboard
-          <span className="nav-item-badge">{gastos.length}</span>
-        </button>
-        <button className={`nav-item ${tab === 'registros' ? 'active' : ''}`} onClick={() => setTab('registros')}>
-          <span className="nav-item-icon">📋</span>
-          Registros
-        </button>
+        {NAV.map((item) => (
+          <button key={item.id}
+            className={`nav-item ${tab === item.id ? 'active' : ''}`}
+            onClick={() => setTab(item.id)}>
+            <span className="nav-item-icon">{item.icon}</span>
+            {item.label}
+            {item.badge !== null && <span className="nav-item-badge">{item.badge}</span>}
+          </button>
+        ))}
       </div>
 
-      <button className="sidebar-add-btn" onClick={onAdd}>
-        + Agregar gasto
-      </button>
+      <button className="sidebar-add-btn" onClick={onAdd}>+ Agregar gasto</button>
     </aside>
   )
 }
 
 export default function App() {
-  const { gastos, loading, add, save, remove } = useGastos()
-  const [tab, setTab]             = useState('dashboard')
-  const [modal, setModal]         = useState(null)
+  const [gastos, setGastos]     = useState([])
+  const [catalogo, setCatalogo] = useState([])
+  const [loading, setLoading]   = useState(true)
+  const [tab, setTab]           = useState('dashboard')
+  const [modal, setModal]       = useState(null)
   const [confirmId, setConfirmId] = useState(null)
 
-  const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
-  const restante = PRESUPUESTO - totalGastado
+  useEffect(() => subscribeGastos((data) => { setGastos(data); setLoading(false) }), [])
+  useEffect(() => subscribeCatalogo((data) =>
+    setCatalogo(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
+  ), [])
 
-  function openAdd()  { setModal({ mode: 'add', form: emptyForm('materiales') }) }
-  function openEdit(g){ setModal({ mode: 'edit', form: { ...g, metros: g.metros ?? '', cantidad: g.cantidad ?? '' } }) }
+  const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
+  const restante     = PRESUPUESTO - totalGastado
+
+  function openAdd()   { setModal({ mode: 'add', form: emptyForm('materiales') }) }
+  function openEdit(g) { setModal({ mode: 'edit', form: { ...g, metros: g.metros ?? '', cantidad: g.cantidad ?? '' } }) }
 
   function handleSubmit(e) {
     e.preventDefault()
     const { form, mode } = modal
     if (!form.descripcion || !form.precio_unitario) return
-    if (mode === 'add') add(form); else save(form)
+    mode === 'add' ? addGasto(form) : updateGasto(form)
     setModal(null)
   }
 
-  function doDelete() { remove(confirmId); setConfirmId(null); setModal(null) }
+  function doDelete() { deleteGasto(confirmId); setConfirmId(null); setModal(null) }
 
-  const PAGE_TITLES = { dashboard: { title: 'Dashboard', sub: 'Resumen general y gráficas' }, registros: { title: 'Registros', sub: 'Todos los gastos registrados' } }
+  const PAGE_TITLES = {
+    dashboard:    { title: 'Dashboard',  sub: 'Resumen general y gráficas' },
+    registros:    { title: 'Registros',  sub: 'Todos los gastos registrados' },
+    catalogo:     { title: 'Catálogo',   sub: 'Materiales y precios de referencia' },
+    trabajadores: { title: 'Personal',   sub: 'Trabajadores y asistencia diaria' },
+  }
 
   return (
     <div className="app-shell">
@@ -128,7 +123,7 @@ export default function App() {
           <div className="mobile-header-right">
             <div className="mobile-header-gastado">{COP(totalGastado)}</div>
             <div className={`mobile-header-rest ${restante < 0 ? 'rojo' : ''}`}>
-              {restante >= 0 ? `${COP(restante)} restante` : 'Presupuesto excedido'}
+              {restante >= 0 ? `${COP(restante)} restante` : 'Excedido'}
             </div>
           </div>
         </div>
@@ -139,9 +134,11 @@ export default function App() {
             <div className="page-title">{PAGE_TITLES[tab].title}</div>
             <div className="page-subtitle">{PAGE_TITLES[tab].sub}</div>
           </div>
-          <button className="btn-csv-desk" onClick={() => exportCSV(gastos)}>
-            📊 Exportar CSV
-          </button>
+          {tab === 'registros' && (
+            <button className="btn-csv-desk" onClick={() => exportCSV(gastos)}>
+              📊 Exportar CSV
+            </button>
+          )}
         </div>
 
         {/* Contenido */}
@@ -153,35 +150,50 @@ export default function App() {
             </div>
           ) : (
             <>
-              {tab === 'dashboard' && <Dashboard gastos={gastos} />}
-              {tab === 'registros' && (
+              {tab === 'dashboard'    && <Dashboard gastos={gastos} />}
+              {tab === 'registros'    && (
                 <Registros gastos={gastos} onEdit={openEdit}
                   onDelete={(id) => setConfirmId(id)}
                   onExport={() => exportCSV(gastos)} />
               )}
+              {tab === 'catalogo'     && <Catalogo />}
+              {tab === 'trabajadores' && <Trabajadores />}
             </>
           )}
         </div>
 
         {/* Nav móvil */}
         <nav className="bottom-nav">
-          <button className={`nav-btn ${tab === 'dashboard' ? 'nav-active' : ''}`} onClick={() => setTab('dashboard')}>
+          <button className={`nav-btn ${tab === 'dashboard' ? 'nav-active' : ''}`}
+            onClick={() => setTab('dashboard')}>
             <span className="nav-icon">📊</span>
             <span className="nav-label">Dashboard</span>
           </button>
-          <button className="nav-fab" onClick={openAdd}>+</button>
-          <button className={`nav-btn ${tab === 'registros' ? 'nav-active' : ''}`} onClick={() => setTab('registros')}>
+          <button className={`nav-btn ${tab === 'registros' ? 'nav-active' : ''}`}
+            onClick={() => setTab('registros')}>
             <span className="nav-icon">📋</span>
             <span className="nav-label">Registros</span>
+          </button>
+          <button className="nav-fab" onClick={openAdd}>+</button>
+          <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`}
+            onClick={() => setTab('catalogo')}>
+            <span className="nav-icon">🧱</span>
+            <span className="nav-label">Catálogo</span>
+          </button>
+          <button className={`nav-btn ${tab === 'trabajadores' ? 'nav-active' : ''}`}
+            onClick={() => setTab('trabajadores')}>
+            <span className="nav-icon">👷</span>
+            <span className="nav-label">Personal</span>
           </button>
         </nav>
       </div>
 
       <Modal modal={modal} setModal={setModal} onSubmit={handleSubmit}
-        onDelete={() => setConfirmId(modal.form.id)} gastos={gastos} />
+        onDelete={() => setConfirmId(modal.form.id)} gastos={gastos} catalogo={catalogo} />
 
       {confirmId && (
-        <div className="confirm-overlay" onClick={(e) => { if (e.target===e.currentTarget) setConfirmId(null) }}>
+        <div className="confirm-overlay"
+          onClick={(e) => { if (e.target===e.currentTarget) setConfirmId(null) }}>
           <div className="confirm-box">
             <div className="confirm-icon-wrap">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">

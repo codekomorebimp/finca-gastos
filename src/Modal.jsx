@@ -1,6 +1,6 @@
-import { CATS, CATALOGO, COP, calcTotal, esPorMetro, emptyForm, unidadesFor } from './data'
+import { CATS, COP, calcTotal, esPorMetro, emptyForm, unidadesFor } from './data'
 
-export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = [] }) {
+export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = [], catalogo = [] }) {
   if (!modal) return null
 
   const { form, mode } = modal
@@ -16,8 +16,8 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
     })
   }
 
-  const totalVal = calcTotal(form)
-  const showMetros = esPorMetro(form.unidad)
+  const totalVal    = calcTotal(form)
+  const showMetros  = esPorMetro(form.unidad)
 
   const factDuplicada = form.factura?.trim() && form.descripcion?.trim() &&
     gastos.some((g) =>
@@ -52,13 +52,20 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
               <div className="field">
                 <label>Seleccionar del catálogo</label>
                 <select value="" onChange={(e) => {
-                  const item = CATALOGO.find((c) => c.nombre === e.target.value)
+                  const item = catalogo.find((c) => c.nombre === e.target.value)
                   if (!item) return
-                  setModal((m) => ({ ...m, form: { ...m.form, descripcion: item.nombre, unidad: item.unidad, precio_unitario: String(item.precio), metros: '' } }))
+                  setModal((m) => ({
+                    ...m,
+                    form: { ...m.form, descripcion: item.nombre, unidad: item.unidad, precio_unitario: String(item.precio), metros: '' },
+                  }))
                 }}>
-                  <option value="">— Elegir material —</option>
-                  {CATALOGO.map((c) => (
-                    <option key={c.nombre} value={c.nombre}>{c.nombre} — {COP(c.precio)} / {c.unidad}</option>
+                  <option value="">
+                    {catalogo.length === 0 ? '— Sin materiales (agrégalos en Catálogo) —' : '— Elegir material —'}
+                  </option>
+                  {catalogo.map((c) => (
+                    <option key={c.id} value={c.nombre}>
+                      {c.nombre} — {COP(c.precio)} / {c.unidad}
+                    </option>
                   ))}
                 </select>
               </div>
@@ -66,7 +73,8 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
 
             <div className="field">
               <label>Descripción</label>
-              <input placeholder={form.categoria === 'mano_obra' ? 'Ej: Maestro Pedro - cimentación' : 'Ej: Cemento gris x 50kg'}
+              <input
+                placeholder={form.categoria === 'mano_obra' ? 'Ej: Maestro Pedro - cimentación' : 'Ej: Cemento gris x 50kg'}
                 value={form.descripcion} onChange={(e) => change('descripcion', e.target.value)} required autoFocus />
             </div>
 
@@ -112,11 +120,14 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
                   value={form.factura ?? ''}
                   onChange={(e) => change('factura', e.target.value)}
                   style={factDuplicada ? { borderColor: '#dc2626', background: '#fff5f5' } : {}} />
-                {factDuplicada && <div className="field-error">Este elemento ya está registrado en la factura {form.factura}</div>}
+                {factDuplicada && (
+                  <div className="field-error">Este elemento ya está en la factura {form.factura}</div>
+                )}
               </div>
               <div className="field">
                 <label>Notas</label>
-                <input placeholder="Proveedor, obs..." value={form.notas} onChange={(e) => change('notas', e.target.value)} />
+                <input placeholder="Proveedor, obs..."
+                  value={form.notas} onChange={(e) => change('notas', e.target.value)} />
               </div>
             </div>
 
@@ -136,7 +147,8 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
             {mode === 'edit' && (
               <button type="button" className="btn-del" onClick={onDelete}>🗑️</button>
             )}
-            <button type="submit" className="btn-main" disabled={!!factDuplicada}
+            <button type="submit" className="btn-main"
+              disabled={!!factDuplicada}
               style={factDuplicada ? { opacity: 0.4, cursor: 'not-allowed' } : {}}>
               {mode === 'add' ? 'Guardar gasto' : 'Guardar cambios'}
             </button>
