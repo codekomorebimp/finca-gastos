@@ -1,23 +1,36 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { subscribeCatalogo, addMaterial, updateMaterial, deleteMaterial } from './services/catalogo'
 import { CATALOGO as DEFAULTS, UNIDADES_MAT, COP } from './data'
 
 const EMPTY_FORM = { nombre: '', unidad: 'unidad', precio: '', porMetro: false }
+
+// Flag de sesión: evita re-sembrar si el usuario borra todo manualmente
+let _seeded = false
 
 export default function Catalogo() {
   const [items, setItems]         = useState([])
   const [loading, setLoading]     = useState(true)
   const [modal, setModal]         = useState(null)
   const [confirmId, setConfirmId] = useState(null)
+  const seedingRef                = useRef(false)
 
   useEffect(() =>
     subscribeCatalogo((data) => {
+      // Auto-cargar predeterminados la primera vez que el catálogo esté vacío
+      if (data.length === 0 && !_seeded && !seedingRef.current) {
+        seedingRef.current = true
+        _seeded = true
+        Promise.all(
+          DEFAULTS.map((m) => addMaterial({ nombre: m.nombre, unidad: m.unidad, precio: m.precio, porMetro: m.porMetro }))
+        ).finally(() => { seedingRef.current = false })
+      }
       setItems(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
       setLoading(false)
     }),
   [])
 
   async function seedDefaults() {
+    _seeded = true
     for (const m of DEFAULTS)
       await addMaterial({ nombre: m.nombre, unidad: m.unidad, precio: m.precio, porMetro: m.porMetro })
   }
@@ -153,13 +166,22 @@ export default function Catalogo() {
                   </div>
                 </div>
                 <div className="field">
-                  <div className="toggle-row">
-                    <div>
-                      <div className="toggle-main-label">Se cobra por metro</div>
-                      <div className="toggle-hint">El precio se multiplica por metros ingresados en el gasto</div>
-                    </div>
-                    <div className={`toggle ${modal.form.porMetro ? 'toggle-on' : ''}`}
-                      onClick={() => change('porMetro', !modal.form.porMetro)} />
+                  <label>¿Cómo se cobra?</label>
+                  <div className="unit-mode-picker">
+                    <button type="button"
+                      className={`unit-mode-btn ${!modal.form.porMetro ? 'unit-mode-active' : ''}`}
+                      onClick={() => change('porMetro', false)}>
+                      <span className="unit-mode-icon">📦</span>
+                      <span className="unit-mode-label">Por unidad</span>
+                      <span className="unit-mode-hint">precio × cantidad</span>
+                    </button>
+                    <button type="button"
+                      className={`unit-mode-btn ${modal.form.porMetro ? 'unit-mode-active unit-mode-active-metro' : ''}`}
+                      onClick={() => change('porMetro', true)}>
+                      <span className="unit-mode-icon">📐</span>
+                      <span className="unit-mode-label">Por metro</span>
+                      <span className="unit-mode-hint">precio × metros × cantidad</span>
+                    </button>
                   </div>
                 </div>
               </div>

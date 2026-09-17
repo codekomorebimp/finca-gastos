@@ -763,6 +763,30 @@ body {
 .hbar-vals { display: flex; justify-content: flex-end; margin-top: 4px; }
 .hbar-sub  { font-size: 11px; color: var(--text-muted); margin-left: 6px; }
 
+/* ── SELECTOR POR UNIDAD / POR METRO ─────────────────── */
+.unit-mode-picker { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.unit-mode-btn {
+  border: 2px solid var(--border); background: var(--card);
+  border-radius: 12px; padding: 14px 10px;
+  cursor: pointer; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  transition: all 0.15s;
+}
+.unit-mode-btn:hover { border-color: #94a3b8; }
+.unit-mode-icon  { font-size: 24px; line-height: 1; }
+.unit-mode-label { font-size: 13px; font-weight: 700; color: var(--text); }
+.unit-mode-hint  { font-size: 11px; color: var(--text-muted); }
+
+.unit-mode-active {
+  border-color: var(--mat); background: var(--mat-bg);
+}
+.unit-mode-active .unit-mode-label { color: var(--mat); }
+.unit-mode-active-metro {
+  border-color: #7c3aed; background: #f5f3ff;
+}
+.unit-mode-active-metro .unit-mode-label { color: #7c3aed; }
+
 .tbl-btn-edit, .tbl-btn-del {
   width: 30px; height: 30px; border-radius: 8px; border: none;
   cursor: pointer; display: inline-flex; align-items: center; justify-content: center;
