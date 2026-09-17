@@ -95,7 +95,7 @@ export default function App() {
   function handleSubmit(e) {
     e.preventDefault()
     const { form, mode } = modal
-    if (!form.descripcion || !form.precio_unitario) return
+    if (!form.descripcion || !form.precio_unitario || !form.factura?.trim()) return
     mode === 'add' ? addGasto(form) : updateGasto(form)
     setModal(null)
   }

@@ -119,15 +119,15 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
                 </div>
               )}
               <div className="field">
-                <label>Fecha</label>
-                <input type="date" value={form.fecha} onChange={(e) => change('fecha', e.target.value)} />
+                <label>Fecha <span className="field-required">*</span></label>
+                <input type="date" required value={form.fecha} onChange={(e) => change('fecha', e.target.value)} />
               </div>
             </div>
 
             <div className="field-row">
               <div className="field">
-                <label># Factura</label>
-                <input placeholder="Ej: 001"
+                <label># Factura <span className="field-required">*</span></label>
+                <input placeholder="Ej: 001" required
                   value={form.factura ?? ''}
                   onChange={(e) => change('factura', e.target.value)}
                   style={factDuplicada ? { borderColor: '#dc2626', background: '#fff5f5' } : {}} />
@@ -136,7 +136,7 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
                 )}
               </div>
               <div className="field">
-                <label>Notas</label>
+                <label>Notas <span className="field-optional">— opcional</span></label>
                 <input placeholder="Proveedor, obs..."
                   value={form.notas} onChange={(e) => change('notas', e.target.value)} />
               </div>

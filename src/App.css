@@ -506,7 +506,9 @@ body {
 }
 .field input:focus, .field select:focus { border-color: var(--mat); box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
 .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.field-error { font-size: 11px; color: var(--red); margin-top: 4px; font-weight: 600; }
+.field-error    { font-size: 11px; color: var(--red); margin-top: 4px; font-weight: 600; }
+.field-required { color: var(--red); font-weight: 700; }
+.field-optional { font-size: 10px; color: var(--text-muted); font-weight: 400; text-transform: none; letter-spacing: 0; }
 
 .total-preview {
   background: var(--green-bg); border: 1.5px solid #bbf7d0;
