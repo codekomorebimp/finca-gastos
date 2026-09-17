@@ -1,4 +1,4 @@
-export const PRESUPUESTO = 142_000_000
+export const PRESUPUESTO = 120_000_000
 
 export const CATS = [
   { id: 'materiales', label: 'Materiales',   icon: '🧱', dotClass: 'mat',  color: '#2563eb', tabActive: 'active-mat'  },
