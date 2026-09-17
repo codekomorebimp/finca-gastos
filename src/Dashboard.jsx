@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CATS, PRESUPUESTO, COP, calcTotal, esPorMetro } from './data'
+import { CATS, PRESUPUESTO, COP, calcTotal, esPorMetro, catOf } from './data'
 
 const pct = (v, total) => (total ? (v / total) * 100 : 0)
 
@@ -131,6 +131,14 @@ export default function Dashboard({ gastos }) {
     return (
       <div className="db-wrap">
         <BudgetCard totalGastado={0} />
+        <div className="db-stats-grid">
+          {[{icon:'💰',label:'Total gastado',val:COP(0),sub:'0% ejecutado',subClass:''},{icon:'🏦',label:'Restante',val:COP(PRESUPUESTO),sub:'Del presupuesto',subClass:'verde'},{icon:'🧱',label:'Materiales',val:COP(0),sub:'0 registros',subClass:''},{icon:'👷',label:'Mano de obra',val:COP(0),sub:'0 registros',subClass:''}].map((s,i) => (
+            <div key={i} className="stat-card">
+              <div className="stat-card-icon" style={{background:['#eff6ff','#f0fdf4','#eff6ff','#fff7ed'][i]}}>{s.icon}</div>
+              <div className="stat-card-body"><div className="stat-card-val">{s.val}</div><div className="stat-card-label">{s.label}</div><div className={`stat-card-sub ${s.subClass}`}>{s.sub}</div></div>
+            </div>
+          ))}
+        </div>
         <div className="empty" style={{ marginTop: 32 }}>
           <div className="empty-icon">📊</div>
           <h3>Sin datos aún</h3>
@@ -140,11 +148,52 @@ export default function Dashboard({ gastos }) {
     )
   }
 
+  const pctExec = Math.min((totalGastado / PRESUPUESTO) * 100, 100)
+  const restante = PRESUPUESTO - totalGastado
+  const matTotal  = porCategoria.find(c => c.name === 'Materiales')?.value  ?? 0
+  const obraTotal = porCategoria.find(c => c.name === 'Mano de obra')?.value ?? 0
+
   return (
     <div className="db-wrap">
       <BudgetCard totalGastado={totalGastado} />
 
-      {/* Tarjetas por categoría */}
+      {/* Stats desktop */}
+      <div className="db-stats-grid">
+        <div className="stat-card">
+          <div className="stat-card-icon" style={{background:'#fefce8'}}>💰</div>
+          <div className="stat-card-body">
+            <div className="stat-card-val">{COP(totalGastado)}</div>
+            <div className="stat-card-label">Total gastado</div>
+            <div className={`stat-card-sub ${pctExec>90?'rojo':pctExec>70?'yellow':''}`}>{pctExec.toFixed(1)}% del presupuesto</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon" style={{background: restante>=0 ? '#f0fdf4':'#fef2f2'}}>{restante>=0?'🏦':'⚠️'}</div>
+          <div className="stat-card-body">
+            <div className="stat-card-val">{COP(Math.abs(restante))}</div>
+            <div className="stat-card-label">{restante>=0?'Presupuesto restante':'Excedido'}</div>
+            <div className={`stat-card-sub ${restante>=0?'verde':'rojo'}`}>{restante>=0?'Disponible':'Por encima del límite'}</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon" style={{background:'#eff6ff'}}>🧱</div>
+          <div className="stat-card-body">
+            <div className="stat-card-val">{COP(matTotal)}</div>
+            <div className="stat-card-label">Materiales</div>
+            <div className="stat-card-sub" style={{color:'#64748b'}}>{gastos.filter(g=>g.categoria==='materiales').length} registros</div>
+          </div>
+        </div>
+        <div className="stat-card">
+          <div className="stat-card-icon" style={{background:'#fff7ed'}}>👷</div>
+          <div className="stat-card-body">
+            <div className="stat-card-val">{COP(obraTotal)}</div>
+            <div className="stat-card-label">Mano de obra</div>
+            <div className="stat-card-sub" style={{color:'#64748b'}}>{gastos.filter(g=>g.categoria==='mano_obra').length} registros</div>
+          </div>
+        </div>
+      </div>
+
+      {/* Tarjetas por categoría (mobile) */}
       <div className="db-cat-cards">
         {CATS.map((cat) => {
           const d = porCategoria.find((x) => x.name === cat.label) ?? { value: 0, count: 0 }
@@ -160,6 +209,8 @@ export default function Dashboard({ gastos }) {
           )
         })}
       </div>
+
+      <div className="db-charts-grid">
 
       {/* Donut distribución */}
       {porCategoria.length > 0 && (
@@ -180,7 +231,7 @@ export default function Dashboard({ gastos }) {
 
       {/* Gasto por material */}
       {porMaterial.length > 0 && (
-        <div className="db-chart-card">
+        <div className="db-chart-card db-chart-full">
           <div className="db-chart-title">🧱 Gasto por material</div>
           {porMaterial.map((d, i) => (
             <HBar key={d.name} name={d.name} value={d.value} maxVal={maxMat}
@@ -191,7 +242,7 @@ export default function Dashboard({ gastos }) {
 
       {/* Cantidades compradas */}
       {cantidades.length > 0 && (
-        <div className="db-chart-card">
+        <div className="db-chart-card db-chart-full">
           <div className="db-chart-title">📦 Cantidades compradas</div>
           <div className="db-qty-list">
             {cantidades.map((d) => (
@@ -221,7 +272,8 @@ export default function Dashboard({ gastos }) {
         </div>
       )}
 
-      <div style={{ height: 16 }} />
+      </div> {/* end db-charts-grid */}
+      <div style={{ height: 24 }} />
     </div>
   )
 }

@@ -70,6 +70,26 @@ function SwipeCard({ onDelete, onEdit, children }) {
   )
 }
 
+function TrashIcon() {
+  return (
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="3 6 5 6 21 6" />
+      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+      <path d="M10 11v6M14 11v6" />
+      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+    </svg>
+  )
+}
+
+function PencilIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+    </svg>
+  )
+}
+
 export default function Registros({ gastos, onEdit, onDelete, onExport }) {
   const [search, setSearch]         = useState('')
   const [filterCat, setFilterCat]   = useState('all')
@@ -88,7 +108,6 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
     return [...set].sort()
   }, [gastos])
 
-  // Siempre ordenados por fecha más reciente primero
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
     return gastos.filter((g) => {
@@ -109,6 +128,14 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
     setFilterCat('all'); setFilterMat(''); setFilterFact('')
     setFechaDesde(''); setFechaHasta(''); setSearch('')
   }
+
+  const emptyState = (
+    <div className="empty">
+      <div className="empty-icon">{hayFiltros ? '🔍' : '🏗️'}</div>
+      <h3>{hayFiltros ? 'Sin resultados' : 'Sin gastos aún'}</h3>
+      <p>{hayFiltros ? 'Intenta con otros filtros.' : 'Toca el botón + para agregar.'}</p>
+    </div>
+  )
 
   return (
     <div className="reg-wrap">
@@ -176,14 +203,63 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
         </div>
       </div>
 
+      {/* ── TABLA DESKTOP ── */}
+      <div className="reg-table-wrap">
+        {filtered.length === 0 ? emptyState : (
+          <table className="reg-table">
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Cat.</th>
+                <th>Descripción</th>
+                <th># Factura</th>
+                <th style={{ textAlign: 'right' }}>Cantidad</th>
+                <th style={{ textAlign: 'right' }}>Precio unit.</th>
+                <th style={{ textAlign: 'right' }}>Total</th>
+                <th>Notas</th>
+                <th style={{ textAlign: 'center' }}>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filtered.map((g) => {
+                const cat = catOf(g.categoria)
+                const qty = esPorMetro(g.unidad)
+                  ? `${g.metros} ${g.unidad}${+g.cantidad > 1 ? ` × ${g.cantidad}` : ''}`
+                  : `${(+(g.cantidad || 0)).toLocaleString('es-CO')} ${g.unidad}`
+                return (
+                  <tr key={g.id} className="reg-table-row">
+                    <td className="td-fecha">{fmtDate(g.fecha)}</td>
+                    <td className="td-cat">
+                      <span className={`tbl-cat-badge tbl-cat-${cat.dotClass}`}>{cat.icon} {cat.label}</span>
+                    </td>
+                    <td className="td-desc">{g.descripcion}</td>
+                    <td className="td-fact">{g.factura ? `📄 ${g.factura}` : <span className="td-empty">—</span>}</td>
+                    <td className="td-num">{qty}</td>
+                    <td className="td-num">{COP(g.precio_unitario)}</td>
+                    <td className="td-total">{COP(calcTotal(g))}</td>
+                    <td className="td-notes">{g.notas || <span className="td-empty">—</span>}</td>
+                    <td className="td-actions">
+                      <button className="tbl-btn-edit" onClick={() => onEdit(g)} title="Editar"><PencilIcon /></button>
+                      <button className="tbl-btn-del" onClick={() => onDelete(g.id)} title="Eliminar"><TrashIcon /></button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+            <tfoot>
+              <tr className="reg-table-foot">
+                <td colSpan={6} style={{ textAlign: 'right', paddingRight: 16 }}>Total filtrado</td>
+                <td className="td-total">{COP(filteredTotal)}</td>
+                <td colSpan={2} />
+              </tr>
+            </tfoot>
+          </table>
+        )}
+      </div>
+
+      {/* ── TARJETAS MOBILE ── */}
       <div className="cards-section" style={{ paddingTop: 0 }}>
-        {filtered.length === 0 ? (
-          <div className="empty">
-            <div className="empty-icon">{hayFiltros ? '🔍' : '🏗️'}</div>
-            <h3>{hayFiltros ? 'Sin resultados' : 'Sin gastos aún'}</h3>
-            <p>{hayFiltros ? 'Intenta con otros filtros.' : 'Toca el botón + para agregar.'}</p>
-          </div>
-        ) : (
+        {filtered.length === 0 ? emptyState : (
           filtered.map((g) => {
             const cat = catOf(g.categoria)
             return (
