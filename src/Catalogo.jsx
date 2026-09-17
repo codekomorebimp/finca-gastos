@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { subscribeCatalogo, addMaterial, updateMaterial, deleteMaterial } from './services/catalogo'
+import { syncGastosFromCatalogo } from './services/gastos'
 import { CATALOGO as DEFAULTS, UNIDADES_MAT, COP } from './data'
 
 const EMPTY_FORM = { nombre: '', unidad: 'unidad', precio: '', porMetro: false }
@@ -12,6 +13,7 @@ export default function Catalogo() {
   const [loading, setLoading]     = useState(true)
   const [modal, setModal]         = useState(null)
   const [confirmId, setConfirmId] = useState(null)
+  const [syncMsg, setSyncMsg]     = useState(null)
   const seedingRef                = useRef(false)
 
   useEffect(() =>
@@ -44,7 +46,16 @@ export default function Catalogo() {
     const { form, mode } = modal
     if (!form.nombre.trim() || !form.precio) return
     const data = { nombre: form.nombre.trim(), unidad: form.unidad, precio: +form.precio, porMetro: !!form.porMetro }
-    mode === 'add' ? await addMaterial(data) : await updateMaterial({ id: form.id, ...data })
+    if (mode === 'add') {
+      await addMaterial(data)
+    } else {
+      await updateMaterial({ id: form.id, ...data })
+      const n = await syncGastosFromCatalogo(form.id, data)
+      if (n > 0) {
+        setSyncMsg(`✅ ${n} gasto${n !== 1 ? 's' : ''} actualizado${n !== 1 ? 's' : ''}`)
+        setTimeout(() => setSyncMsg(null), 3500)
+      }
+    }
     setModal(null)
   }
 
@@ -57,6 +68,7 @@ export default function Catalogo() {
 
   return (
     <div className="page-wrap">
+      {syncMsg && <div className="sync-toast">{syncMsg}</div>}
       <div className="pg-toolbar">
         <span className="reg-count">{items.length} material{items.length !== 1 ? 'es' : ''}</span>
         <div style={{ display: 'flex', gap: 8 }}>

@@ -11,6 +11,7 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
       if (field === 'categoria') {
         const units = unidadesFor(value)
         if (!units.includes(next.unidad)) next.unidad = units[0]
+        if (value !== 'materiales') next.catalogoId = null
       }
       return { ...m, form: next }
     })
@@ -56,7 +57,7 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
                   if (!item) return
                   setModal((m) => ({
                     ...m,
-                    form: { ...m.form, descripcion: item.nombre, unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' },
+                    form: { ...m.form, catalogoId: item.id, descripcion: item.nombre, unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' },
                   }))
                 }}>
                   <option value="">

@@ -58,7 +58,7 @@ export const fmtDate = (d) => {
 export const emptyForm = (cat = 'materiales') => ({
   descripcion: '', categoria: cat, factura: '',
   unidad: cat === 'mano_obra' ? 'día' : 'unidad',
-  porMetro: false,
+  porMetro: false, catalogoId: null,
   precio_unitario: '', metros: '', cantidad: '', fecha: hoy(), notas: '',
 })
 
