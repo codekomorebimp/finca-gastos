@@ -6,6 +6,7 @@ import { subscribeCatalogo } from './services/catalogo'
 import Dashboard from './Dashboard'
 import Registros from './Registros'
 import Catalogo  from './Catalogo'
+import Facturas  from './Facturas'
 import Modal     from './Modal'
 
 function exportCSV(gastos) {
@@ -32,6 +33,7 @@ function Sidebar({ tab, setTab, gastos, onAdd }) {
   const NAV = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard', badge: null },
     { id: 'registros', icon: '📋', label: 'Registros', badge: gastos.length },
+    { id: 'facturas',  icon: '🧾', label: 'Facturas',  badge: null },
     { id: 'catalogo',  icon: '🧱', label: 'Catálogo',  badge: null },
   ]
 
@@ -102,8 +104,9 @@ export default function App() {
 
   const PAGE_TITLES = {
     dashboard: { title: 'Dashboard', sub: 'Resumen general y gráficas' },
-    registros:  { title: 'Registros', sub: 'Todos los gastos registrados' },
-    catalogo:   { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
+    registros: { title: 'Registros', sub: 'Todos los gastos registrados' },
+    facturas:  { title: 'Facturas',  sub: 'Gastos agrupados por factura' },
+    catalogo:  { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
   }
 
   return (
@@ -147,13 +150,14 @@ export default function App() {
             </div>
           ) : (
             <>
-              {tab === 'dashboard'    && <Dashboard gastos={gastos} />}
-              {tab === 'registros'    && (
+              {tab === 'dashboard' && <Dashboard gastos={gastos} />}
+              {tab === 'registros' && (
                 <Registros gastos={gastos} onEdit={openEdit}
                   onDelete={(id) => setConfirmId(id)}
                   onExport={() => exportCSV(gastos)} />
               )}
-              {tab === 'catalogo' && <Catalogo />}
+              {tab === 'facturas'  && <Facturas gastos={gastos} />}
+              {tab === 'catalogo'  && <Catalogo />}
             </>
           )}
         </div>
@@ -171,6 +175,11 @@ export default function App() {
             <span className="nav-label">Registros</span>
           </button>
           <button className="nav-fab" onClick={openAdd}>+</button>
+          <button className={`nav-btn ${tab === 'facturas' ? 'nav-active' : ''}`}
+            onClick={() => setTab('facturas')}>
+            <span className="nav-icon">🧾</span>
+            <span className="nav-label">Facturas</span>
+          </button>
           <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`}
             onClick={() => setTab('catalogo')}>
             <span className="nav-icon">🧱</span>

@@ -3,90 +3,133 @@ import { CATS, COP, calcTotal, esPorMetro, fmtDate, catOf } from './data'
 
 const SWIPE_THRESHOLD = 72
 
-function SwipeCard({ onDelete, onEdit, children }) {
-  const [offset, setOffset]     = useState(0)
-  const [swiped, setSwiped]     = useState(false)
-  const startX                  = useRef(0)
-  const dragging                = useRef(false)
-  const moved                   = useRef(false)
+function SwipeCard({ onDelete, onView, children }) {
+  const [offset, setOffset] = useState(0)
+  const [swiped, setSwiped] = useState(false)
+  const startX   = useRef(0)
+  const dragging = useRef(false)
+  const moved    = useRef(false)
 
-  function onTouchStart(e) {
-    startX.current = e.touches[0].clientX
-    dragging.current = true
-    moved.current = false
-  }
-
+  function onTouchStart(e) { startX.current = e.touches[0].clientX; dragging.current = true; moved.current = false }
   function onTouchMove(e) {
     if (!dragging.current) return
     const delta = e.touches[0].clientX - startX.current
     if (Math.abs(delta) > 6) moved.current = true
-    if (delta < 0) {
-      setOffset(Math.max(delta, -SWIPE_THRESHOLD))
-      setSwiped(false)
-    } else if (swiped) {
-      setOffset(Math.min(delta - SWIPE_THRESHOLD, 0))
-    }
+    if (delta < 0) { setOffset(Math.max(delta, -SWIPE_THRESHOLD)); setSwiped(false) }
+    else if (swiped) { setOffset(Math.min(delta - SWIPE_THRESHOLD, 0)) }
   }
-
   function onTouchEnd() {
     dragging.current = false
-    if (offset < -SWIPE_THRESHOLD * 0.55) {
-      setOffset(-SWIPE_THRESHOLD)
-      setSwiped(true)
-    } else {
-      setOffset(0)
-      setSwiped(false)
-    }
+    if (offset < -SWIPE_THRESHOLD * 0.55) { setOffset(-SWIPE_THRESHOLD); setSwiped(true) }
+    else { setOffset(0); setSwiped(false) }
   }
-
   function handleCardClick() {
     if (moved.current) return
     if (swiped) { setOffset(0); setSwiped(false); return }
-    onEdit()
+    onView()
   }
 
   return (
     <div className="swipe-wrap">
       <div className="swipe-del-btn" onClick={onDelete}>
         <svg className="swipe-del-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <polyline points="3 6 5 6 21 6" />
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-          <path d="M10 11v6M14 11v6" />
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+          <path d="M10 11v6M14 11v6" /><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
         </svg>
         <span className="swipe-del-label">Eliminar</span>
       </div>
-      <div
-        className="swipe-card-inner"
+      <div className="swipe-card-inner"
         style={{ transform: `translateX(${offset}px)`, transition: dragging.current ? 'none' : 'transform 0.22s ease' }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onClick={handleCardClick}
-      >
+        onTouchStart={onTouchStart} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} onClick={handleCardClick}>
         {children}
       </div>
     </div>
   )
 }
 
-function TrashIcon() {
-  return (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-      <path d="M10 11v6M14 11v6" />
-      <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-    </svg>
-  )
-}
+function TrashIcon()  { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg> }
+function PencilIcon() { return <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> }
+function EyeIcon()    { return <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg> }
 
-function PencilIcon() {
+/* ── Detalle bonito de un gasto ── */
+function GastoDetalle({ gasto, onClose, onEdit }) {
+  const cat    = catOf(gasto.categoria)
+  const total  = calcTotal(gasto)
+  const isMtro = gasto.porMetro ?? esPorMetro(gasto.unidad)
+
+  const headerColors = {
+    materiales: 'linear-gradient(135deg, #1e40af 0%, #2563eb 100%)',
+    mano_obra:  'linear-gradient(135deg, #c2410c 0%, #ea580c 100%)',
+    otro:       'linear-gradient(135deg, #6d28d9 0%, #7c3aed 100%)',
+  }
+
   return (
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-    </svg>
+    <div className="overlay" onClick={e => { if (e.target === e.currentTarget) onClose() }}>
+      <div className="modal det-modal">
+        <div className="det-header" style={{ background: headerColors[gasto.categoria] ?? headerColors.otro }}>
+          <button className="det-close-btn" onClick={onClose}>✕</button>
+          <div className="det-cat-icon">{cat.icon}</div>
+          <div className="det-name">{gasto.descripcion}</div>
+          <div className="det-cat-label">{cat.label}</div>
+          <div className="det-total">{COP(total)}</div>
+        </div>
+
+        <div className="det-body">
+          <div className="det-row">
+            <span className="det-row-label">Precio unitario</span>
+            <span className="det-row-val">{COP(gasto.precio_unitario)} / {gasto.unidad}</span>
+          </div>
+          {isMtro ? (
+            <>
+              <div className="det-row">
+                <span className="det-row-label">Metros</span>
+                <span className="det-row-val">{gasto.metros} {gasto.unidad}</span>
+              </div>
+              {+gasto.cantidad > 1 && (
+                <div className="det-row">
+                  <span className="det-row-label">Piezas</span>
+                  <span className="det-row-val">{gasto.cantidad}</span>
+                </div>
+              )}
+              <div className="det-row det-row-formula">
+                <span className="det-row-label">Cálculo</span>
+                <span className="det-row-val det-formula">
+                  {COP(gasto.precio_unitario)} × {gasto.metros} {gasto.unidad}{+gasto.cantidad > 1 ? ` × ${gasto.cantidad}` : ''} = <strong>{COP(total)}</strong>
+                </span>
+              </div>
+            </>
+          ) : (
+            <div className="det-row det-row-formula">
+              <span className="det-row-label">Cantidad</span>
+              <span className="det-row-val">{(+(gasto.cantidad || 0)).toLocaleString('es-CO')} {gasto.unidad}</span>
+            </div>
+          )}
+          <div className="det-divider" />
+          <div className="det-row">
+            <span className="det-row-label">📅 Fecha</span>
+            <span className="det-row-val">{fmtDate(gasto.fecha)}</span>
+          </div>
+          {gasto.factura && (
+            <div className="det-row">
+              <span className="det-row-label">🧾 Factura</span>
+              <span className="det-row-val det-badge">{gasto.factura}</span>
+            </div>
+          )}
+          {gasto.notas && (
+            <div className="det-row det-row-notes">
+              <span className="det-row-label">📝 Notas</span>
+              <span className="det-row-val">{gasto.notas}</span>
+            </div>
+          )}
+        </div>
+
+        <div className="modal-actions">
+          <button className="btn-main" onClick={() => { onClose(); onEdit(gasto) }}>
+            ✏️ Editar este gasto
+          </button>
+        </div>
+      </div>
+    </div>
   )
 }
 
@@ -97,20 +140,21 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
   const [filterFact, setFilterFact] = useState('')
   const [fechaDesde, setFechaDesde] = useState('')
   const [fechaHasta, setFechaHasta] = useState('')
+  const [detalle, setDetalle]       = useState(null)
 
   const materialesUnicos = useMemo(() => {
-    const set = new Set(gastos.filter((g) => g.categoria === 'materiales').map((g) => g.descripcion))
+    const set = new Set(gastos.filter(g => g.categoria === 'materiales').map(g => g.descripcion))
     return [...set].sort()
   }, [gastos])
 
   const facturasUnicas = useMemo(() => {
-    const set = new Set(gastos.map((g) => g.factura).filter(Boolean))
+    const set = new Set(gastos.map(g => g.factura).filter(Boolean))
     return [...set].sort()
   }, [gastos])
 
   const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return gastos.filter((g) => {
+    return gastos.filter(g => {
       if (filterCat !== 'all' && g.categoria !== filterCat) return false
       if (filterMat && g.descripcion !== filterMat) return false
       if (filterFact && g.factura !== filterFact) return false
@@ -124,10 +168,7 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
   const filteredTotal = useMemo(() => filtered.reduce((s, g) => s + calcTotal(g), 0), [filtered])
   const hayFiltros = filterCat !== 'all' || filterMat || filterFact || fechaDesde || fechaHasta || search
 
-  function limpiar() {
-    setFilterCat('all'); setFilterMat(''); setFilterFact('')
-    setFechaDesde(''); setFechaHasta(''); setSearch('')
-  }
+  function limpiar() { setFilterCat('all'); setFilterMat(''); setFilterFact(''); setFechaDesde(''); setFechaHasta(''); setSearch('') }
 
   const emptyState = (
     <div className="empty">
@@ -143,7 +184,7 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
         <div className="search-wrap-inner">
           <span className="search-icon">🔍</span>
           <input className="search-input" placeholder="Buscar descripción, notas, factura..."
-            value={search} onChange={(e) => setSearch(e.target.value)} />
+            value={search} onChange={e => setSearch(e.target.value)} />
         </div>
       </div>
 
@@ -152,47 +193,40 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
           <div className="filter-label">Categoría</div>
           <div className="filter-chips">
             <button className={`chip ${filterCat === 'all' ? 'chip-active-all' : ''}`} onClick={() => setFilterCat('all')}>Todos</button>
-            {CATS.map((cat) => (
-              <button key={cat.id} className={`chip ${filterCat === cat.id ? `chip-active-${cat.dotClass}` : ''}`}
-                onClick={() => setFilterCat(cat.id)}>
+            {CATS.map(cat => (
+              <button key={cat.id} className={`chip ${filterCat === cat.id ? `chip-active-${cat.dotClass}` : ''}`} onClick={() => setFilterCat(cat.id)}>
                 {cat.icon} {cat.label}
               </button>
             ))}
           </div>
         </div>
-
         {materialesUnicos.length > 0 && (
           <div className="filter-group">
             <div className="filter-label">Material</div>
-            <select className={`filter-select ${filterMat ? 'active' : ''}`} value={filterMat} onChange={(e) => setFilterMat(e.target.value)}>
+            <select className={`filter-select ${filterMat ? 'active' : ''}`} value={filterMat} onChange={e => setFilterMat(e.target.value)}>
               <option value="">Todos los materiales</option>
-              {materialesUnicos.map((m) => <option key={m} value={m}>{m}</option>)}
+              {materialesUnicos.map(m => <option key={m} value={m}>{m}</option>)}
             </select>
           </div>
         )}
-
         {facturasUnicas.length > 0 && (
           <div className="filter-group">
             <div className="filter-label"># Factura</div>
-            <select className={`filter-select ${filterFact ? 'active' : ''}`} value={filterFact} onChange={(e) => setFilterFact(e.target.value)}>
+            <select className={`filter-select ${filterFact ? 'active' : ''}`} value={filterFact} onChange={e => setFilterFact(e.target.value)}>
               <option value="">Todas las facturas</option>
-              {facturasUnicas.map((f) => <option key={f} value={f}>📄 {f}</option>)}
+              {facturasUnicas.map(f => <option key={f} value={f}>📄 {f}</option>)}
             </select>
           </div>
         )}
-
         <div className="filter-group">
           <div className="filter-label">Rango de fechas</div>
           <div className="filter-date-row">
-            <input type="date" className="filter-date" value={fechaDesde} onChange={(e) => setFechaDesde(e.target.value)} />
+            <input type="date" className="filter-date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} />
             <span className="filter-date-sep">→</span>
-            <input type="date" className="filter-date" value={fechaHasta} onChange={(e) => setFechaHasta(e.target.value)} />
+            <input type="date" className="filter-date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
           </div>
         </div>
-
-        {hayFiltros && (
-          <button className="chip chip-clear" onClick={limpiar}>✕ Limpiar filtros</button>
-        )}
+        {hayFiltros && <button className="chip chip-clear" onClick={limpiar}>✕ Limpiar filtros</button>}
       </div>
 
       <div className="reg-toolbar">
@@ -221,17 +255,16 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
               </tr>
             </thead>
             <tbody>
-              {filtered.map((g) => {
+              {filtered.map(g => {
                 const cat = catOf(g.categoria)
-                const qty = esPorMetro(g.unidad)
+                const isMtro = g.porMetro ?? esPorMetro(g.unidad)
+                const qty = isMtro
                   ? `${g.metros} ${g.unidad}${+g.cantidad > 1 ? ` × ${g.cantidad}` : ''}`
                   : `${(+(g.cantidad || 0)).toLocaleString('es-CO')} ${g.unidad}`
                 return (
                   <tr key={g.id} className="reg-table-row">
                     <td className="td-fecha">{fmtDate(g.fecha)}</td>
-                    <td className="td-cat">
-                      <span className={`tbl-cat-badge tbl-cat-${cat.dotClass}`}>{cat.icon} {cat.label}</span>
-                    </td>
+                    <td className="td-cat"><span className={`tbl-cat-badge tbl-cat-${cat.dotClass}`}>{cat.icon} {cat.label}</span></td>
                     <td className="td-desc">{g.descripcion}</td>
                     <td className="td-fact">{g.factura ? `📄 ${g.factura}` : <span className="td-empty">—</span>}</td>
                     <td className="td-num">{qty}</td>
@@ -239,8 +272,9 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
                     <td className="td-total">{COP(calcTotal(g))}</td>
                     <td className="td-notes">{g.notas || <span className="td-empty">—</span>}</td>
                     <td className="td-actions">
-                      <button className="tbl-btn-edit" onClick={() => onEdit(g)} title="Editar"><PencilIcon /></button>
-                      <button className="tbl-btn-del" onClick={() => onDelete(g.id)} title="Eliminar"><TrashIcon /></button>
+                      <button className="tbl-btn-eye"  onClick={() => setDetalle(g)} title="Ver detalle"><EyeIcon /></button>
+                      <button className="tbl-btn-edit" onClick={() => onEdit(g)}     title="Editar"><PencilIcon /></button>
+                      <button className="tbl-btn-del"  onClick={() => onDelete(g.id)} title="Eliminar"><TrashIcon /></button>
                     </td>
                   </tr>
                 )
@@ -260,20 +294,19 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
       {/* ── TARJETAS MOBILE ── */}
       <div className="cards-section" style={{ paddingTop: 0 }}>
         {filtered.length === 0 ? emptyState : (
-          filtered.map((g) => {
+          filtered.map(g => {
             const cat = catOf(g.categoria)
+            const isMtro = g.porMetro ?? esPorMetro(g.unidad)
             return (
-              <SwipeCard key={g.id} onEdit={() => onEdit(g)} onDelete={() => onDelete(g.id)}>
+              <SwipeCard key={g.id} onView={() => setDetalle(g)} onDelete={() => onDelete(g.id)}>
                 <div className="card" style={{ marginBottom: 0 }}>
                   <div className={`cat-dot ${cat.dotClass}`}>{cat.icon}</div>
                   <div className="card-body">
                     <div className="card-name">{g.descripcion}</div>
                     <div className="card-sub">
-                      {esPorMetro(g.unidad) ? (
-                        <span>{g.metros} {g.unidad}{+g.cantidad > 1 ? ` × ${g.cantidad} pzas` : ''}</span>
-                      ) : (
-                        <span>{(+(g.cantidad || 0)).toLocaleString('es-CO')} {g.unidad}</span>
-                      )}
+                      {isMtro
+                        ? <span>{g.metros} {g.unidad}{+g.cantidad > 1 ? ` × ${g.cantidad} pzas` : ''}</span>
+                        : <span>{(+(g.cantidad || 0)).toLocaleString('es-CO')} {g.unidad}</span>}
                       <span className="dot-sep">·</span>
                       <span>{COP(g.precio_unitario)}/{g.unidad}</span>
                       {g.factura && <><span className="dot-sep">·</span><span>📄 {g.factura}</span></>}
@@ -292,6 +325,10 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
       </div>
 
       <div style={{ height: 16 }} />
+
+      {detalle && (
+        <GastoDetalle gasto={detalle} onClose={() => setDetalle(null)} onEdit={(g) => { setDetalle(null); onEdit(g) }} />
+      )}
     </div>
   )
 }

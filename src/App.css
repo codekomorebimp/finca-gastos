@@ -843,3 +843,140 @@ body {
 
 .reg-table tfoot tr { background: #f8fafc; border-top: 2px solid var(--border); }
 .reg-table tfoot td { padding: 10px 14px; font-size: 13px; }
+
+/* Eye button */
+.tbl-btn-eye { width: 30px; height: 30px; border-radius: 8px; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; transition: background 0.12s; margin: 0 2px; background: #f0fdf4; color: #16a34a; }
+.tbl-btn-eye:hover { background: #dcfce7; }
+
+/* ── DETALLE DE GASTO ─────────────────────────────────── */
+.det-modal { padding-bottom: env(safe-area-inset-bottom, 16px); }
+
+.det-header {
+  border-radius: 22px 22px 0 0; padding: 22px 20px 24px;
+  position: relative; text-align: center;
+}
+@media (min-width: 640px) { .det-header { border-radius: var(--radius) var(--radius) 0 0; } }
+
+.det-close-btn {
+  position: absolute; top: 14px; right: 14px;
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,255,255,0.2); border: none;
+  color: #fff; font-size: 14px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.12s;
+}
+.det-close-btn:hover { background: rgba(255,255,255,0.3); }
+
+.det-cat-icon  { font-size: 40px; line-height: 1; margin-bottom: 10px; }
+.det-name      { font-size: 18px; font-weight: 800; color: #fff; margin-bottom: 4px; }
+.det-cat-label { font-size: 12px; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
+.det-total     { font-size: 32px; font-weight: 900; color: #fff; font-variant-numeric: tabular-nums; }
+
+.det-body { padding: 8px 20px; }
+
+.det-row {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 12px 0; border-bottom: 1px solid var(--border); gap: 12px;
+}
+.det-row:last-child { border-bottom: none; }
+.det-row-formula { background: #f8fafc; margin: 0 -20px; padding: 12px 20px; border-radius: 10px; }
+.det-row-notes .det-row-val { text-align: right; max-width: 60%; }
+
+.det-row-label { font-size: 13px; color: var(--text-soft); font-weight: 500; flex-shrink: 0; }
+.det-row-val   { font-size: 14px; font-weight: 700; color: var(--text); text-align: right; }
+.det-formula   { font-size: 13px; color: var(--text-soft); }
+.det-formula strong { color: var(--text); font-size: 15px; }
+
+.det-divider { height: 1px; background: var(--border); margin: 4px 0; }
+
+.det-badge {
+  background: var(--mat-bg); color: var(--mat);
+  padding: 2px 10px; border-radius: 99px; font-size: 13px; font-weight: 700;
+}
+
+/* ── FACTURAS ─────────────────────────────────────────── */
+.fac-list { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
+@media (min-width: 768px) { .fac-list { padding: 0; } }
+
+.fac-card {
+  background: var(--card); border-radius: var(--radius);
+  border: 1.5px solid var(--border); padding: 16px;
+  display: flex; align-items: center; gap: 14px;
+  box-shadow: var(--shadow-sm); cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s, border-color 0.15s;
+}
+.fac-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); border-color: #bfdbfe; }
+.fac-card:active { transform: scale(0.99); }
+.fac-card-sin { border-style: dashed; opacity: 0.75; }
+
+.fac-card-icon { font-size: 28px; flex-shrink: 0; }
+.fac-card-body { flex: 1; min-width: 0; }
+.fac-card-num  { font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.fac-card-meta { font-size: 12px; color: var(--text-soft); margin-bottom: 8px; }
+.fac-card-cats { display: flex; flex-wrap: wrap; gap: 4px; }
+.fac-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+.fac-card-total { font-size: 16px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; }
+.fac-card-arrow { color: var(--text-muted); display: flex; align-items: center; }
+
+/* Detalle de factura */
+.fac-det-topbar {
+  padding: 0 16px 16px;
+}
+@media (min-width: 768px) { .fac-det-topbar { padding: 0 0 16px; } }
+
+.fac-back-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: none; border: none; cursor: pointer;
+  font-size: 14px; font-weight: 600; color: var(--mat);
+  padding: 6px 0;
+}
+.fac-back-btn:hover { opacity: 0.75; }
+
+.fac-det-hero {
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #3730a3 100%);
+  border-radius: var(--radius); padding: 24px 20px 20px;
+  margin: 0 16px 20px; color: #fff;
+  box-shadow: 0 8px 32px rgba(30,58,138,0.3);
+}
+@media (min-width: 768px) { .fac-det-hero { margin: 0 0 24px; } }
+
+.fac-det-hero-num   { font-size: 13px; opacity: 0.75; margin-bottom: 8px; font-weight: 600; letter-spacing: 0.3px; }
+.fac-det-hero-total { font-size: 36px; font-weight: 900; font-variant-numeric: tabular-nums; margin-bottom: 6px; }
+.fac-det-hero-meta  { font-size: 13px; opacity: 0.75; margin-bottom: 14px; }
+.fac-det-hero-cats  { display: flex; flex-wrap: wrap; gap: 6px; }
+.fac-hero-badge     { padding: 3px 10px; border-radius: 99px; font-size: 11px; font-weight: 700; }
+.fac-hero-mat  { background: rgba(219,234,254,0.2); color: #bfdbfe; }
+.fac-hero-obra { background: rgba(254,215,170,0.2); color: #fed7aa; }
+.fac-hero-otro { background: rgba(221,214,254,0.2); color: #ddd6fe; }
+
+.fac-det-items {
+  background: var(--card); border-radius: var(--radius);
+  border: 1px solid var(--border); margin: 0 16px;
+  overflow: hidden; box-shadow: var(--shadow-sm);
+}
+@media (min-width: 768px) { .fac-det-items { margin: 0; } }
+
+.fac-det-row {
+  display: flex; align-items: flex-start; gap: 12px;
+  padding: 14px 16px; border-bottom: 1px solid var(--border);
+}
+.fac-det-row:last-child { border-bottom: none; }
+
+.fac-det-row-num  { font-size: 11px; font-weight: 700; color: var(--text-muted); min-width: 18px; padding-top: 2px; }
+.fac-det-row-icon { width: 36px !important; height: 36px !important; font-size: 16px !important; flex-shrink: 0; }
+.fac-det-row-body { flex: 1; min-width: 0; }
+.fac-det-row-name { font-size: 14px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.fac-det-row-calc { font-size: 12px; color: var(--text-soft); margin-bottom: 2px; }
+.fac-det-row-date { font-size: 11px; color: var(--text-muted); }
+.fac-det-row-total { font-size: 14px; font-weight: 800; color: var(--text); font-variant-numeric: tabular-nums; flex-shrink: 0; text-align: right; padding-top: 2px; }
+
+.fac-det-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 16px; margin: 0 16px;
+  background: #f8fafc; border: 1px solid var(--border); border-top: 2px solid var(--border);
+  border-radius: 0 0 var(--radius) var(--radius);
+  font-size: 14px; font-weight: 600; color: var(--text-soft);
+}
+@media (min-width: 768px) { .fac-det-footer { margin: 0; } }
+.fac-footer-label { }
+.fac-footer-total { font-size: 20px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
