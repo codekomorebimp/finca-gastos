@@ -16,8 +16,8 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
     })
   }
 
-  const totalVal    = calcTotal(form)
-  const showMetros  = esPorMetro(form.unidad)
+  const totalVal   = calcTotal(form)
+  const showMetros = form.categoria === 'materiales' ? !!form.porMetro : esPorMetro(form.unidad)
 
   const factDuplicada = form.factura?.trim() && form.descripcion?.trim() &&
     gastos.some((g) =>
@@ -56,11 +56,11 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
                   if (!item) return
                   setModal((m) => ({
                     ...m,
-                    form: { ...m.form, descripcion: item.nombre, unidad: item.unidad, precio_unitario: String(item.precio), metros: '' },
+                    form: { ...m.form, descripcion: item.nombre, unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' },
                   }))
                 }}>
                   <option value="">
-                    {catalogo.length === 0 ? '— Sin materiales (agrégalos en Catálogo) —' : '— Elegir material —'}
+                    {catalogo.length === 0 ? 'Sin materiales (agrégalos en Catálogo)' : 'Elegir material'}
                   </option>
                   {catalogo.map((c) => (
                     <option key={c.id} value={c.nombre}>
@@ -101,12 +101,22 @@ export default function Modal({ modal, setModal, onSubmit, onDelete, gastos = []
             )}
 
             <div className="field-row">
-              <div className="field">
-                <label>Unidad</label>
-                <select value={form.unidad} onChange={(e) => change('unidad', e.target.value)}>
-                  {unidadesFor(form.categoria).map((u) => <option key={u}>{u}</option>)}
-                </select>
-              </div>
+              {form.categoria === 'materiales' ? (
+                <div className="field">
+                  <label>Unidad</label>
+                  <div className="unit-readonly">
+                    {form.unidad || '—'}
+                    {showMetros && <span className="unit-readonly-hint">× metros</span>}
+                  </div>
+                </div>
+              ) : (
+                <div className="field">
+                  <label>Unidad</label>
+                  <select value={form.unidad} onChange={(e) => change('unidad', e.target.value)}>
+                    {unidadesFor(form.categoria).map((u) => <option key={u}>{u}</option>)}
+                  </select>
+                </div>
+              )}
               <div className="field">
                 <label>Fecha</label>
                 <input type="date" value={form.fecha} onChange={(e) => change('fecha', e.target.value)} />

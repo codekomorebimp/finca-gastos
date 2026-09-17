@@ -34,7 +34,7 @@ export const UNIDADES_METRO = ['m', 'm²', 'm³', 'm lineal']
 
 export const esPorMetro = (unidad) => UNIDADES_METRO.includes(unidad)
 
-export const calcTotal = (g) => esPorMetro(g.unidad)
+export const calcTotal = (g) => (g.porMetro ?? esPorMetro(g.unidad))
   ? +g.precio_unitario * +(g.metros || 0) * Math.max(+(g.cantidad || 1), 1)
   : +g.precio_unitario * +(g.cantidad || 0)
 
@@ -58,6 +58,7 @@ export const fmtDate = (d) => {
 export const emptyForm = (cat = 'materiales') => ({
   descripcion: '', categoria: cat, factura: '',
   unidad: cat === 'mano_obra' ? 'día' : 'unidad',
+  porMetro: false,
   precio_unitario: '', metros: '', cantidad: '', fecha: hoy(), notas: '',
 })
 
