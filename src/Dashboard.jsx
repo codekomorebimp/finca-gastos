@@ -159,36 +159,36 @@ export default function Dashboard({ gastos }) {
 
       {/* Stats desktop */}
       <div className="db-stats-grid">
-        <div className="stat-card">
-          <div className="stat-card-icon" style={{background:'#fefce8'}}>💰</div>
+        <div className="stat-card stat-card-amber">
+          <div className="stat-card-icon">💰</div>
           <div className="stat-card-body">
             <div className="stat-card-val">{COP(totalGastado)}</div>
             <div className="stat-card-label">Total gastado</div>
             <div className={`stat-card-sub ${pctExec>90?'rojo':pctExec>70?'yellow':''}`}>{pctExec.toFixed(1)}% del presupuesto</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-card-icon" style={{background: restante>=0 ? '#f0fdf4':'#fef2f2'}}>{restante>=0?'🏦':'⚠️'}</div>
+        <div className={`stat-card ${restante>=0?'stat-card-green':'stat-card-red'}`}>
+          <div className="stat-card-icon">{restante>=0?'🏦':'⚠️'}</div>
           <div className="stat-card-body">
             <div className="stat-card-val">{COP(Math.abs(restante))}</div>
             <div className="stat-card-label">{restante>=0?'Presupuesto restante':'Excedido'}</div>
             <div className={`stat-card-sub ${restante>=0?'verde':'rojo'}`}>{restante>=0?'Disponible':'Por encima del límite'}</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-card-icon" style={{background:'#eff6ff'}}>🧱</div>
+        <div className="stat-card stat-card-blue">
+          <div className="stat-card-icon">🧱</div>
           <div className="stat-card-body">
             <div className="stat-card-val">{COP(matTotal)}</div>
             <div className="stat-card-label">Materiales</div>
-            <div className="stat-card-sub" style={{color:'#64748b'}}>{gastos.filter(g=>g.categoria==='materiales').length} registros</div>
+            <div className="stat-card-sub">{gastos.filter(g=>g.categoria==='materiales').length} registros</div>
           </div>
         </div>
-        <div className="stat-card">
-          <div className="stat-card-icon" style={{background:'#fff7ed'}}>👷</div>
+        <div className="stat-card stat-card-orange">
+          <div className="stat-card-icon">👷</div>
           <div className="stat-card-body">
             <div className="stat-card-val">{COP(obraTotal)}</div>
             <div className="stat-card-label">Mano de obra</div>
-            <div className="stat-card-sub" style={{color:'#64748b'}}>{gastos.filter(g=>g.categoria==='mano_obra').length} registros</div>
+            <div className="stat-card-sub">{gastos.filter(g=>g.categoria==='mano_obra').length} registros</div>
           </div>
         </div>
       </div>
@@ -214,9 +214,9 @@ export default function Dashboard({ gastos }) {
 
       {/* Donut distribución */}
       {porCategoria.length > 0 && (
-        <div className="db-chart-card">
-          <div className="db-chart-title">Distribución del gasto</div>
-          <Donut segments={porCategoria} />
+        <div className="db-chart-card db-chart-purple">
+          <div className="db-chart-title">🍩 Distribución del gasto</div>
+          <Donut segments={porCategoria} size={180} />
           <div className="chart-legend">
             {porCategoria.map((d) => (
               <div key={d.name} className="chart-legend-item">
@@ -231,7 +231,7 @@ export default function Dashboard({ gastos }) {
 
       {/* Gasto por material */}
       {porMaterial.length > 0 && (
-        <div className="db-chart-card db-chart-full">
+        <div className="db-chart-card db-chart-full db-chart-blue">
           <div className="db-chart-title">🧱 Gasto por material</div>
           {porMaterial.map((d, i) => (
             <HBar key={d.name} name={d.name} value={d.value} maxVal={maxMat}
@@ -242,7 +242,7 @@ export default function Dashboard({ gastos }) {
 
       {/* Cantidades compradas */}
       {cantidades.length > 0 && (
-        <div className="db-chart-card db-chart-full">
+        <div className="db-chart-card db-chart-full db-chart-teal">
           <div className="db-chart-title">📦 Cantidades compradas</div>
           <div className="db-qty-list">
             {cantidades.map((d) => (
@@ -263,7 +263,7 @@ export default function Dashboard({ gastos }) {
 
       {/* Mano de obra */}
       {porManoObra.length > 0 && (
-        <div className="db-chart-card">
+        <div className="db-chart-card db-chart-orange">
           <div className="db-chart-title">👷 Mano de obra</div>
           {porManoObra.map((d, i) => (
             <HBar key={d.name} name={d.name} value={d.value} maxVal={maxObra}
