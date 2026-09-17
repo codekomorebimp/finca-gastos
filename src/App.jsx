@@ -3,11 +3,10 @@ import './App.css'
 import { CATS, PRESUPUESTO, COP, calcTotal, emptyForm } from './data'
 import { subscribeGastos, addGasto, updateGasto, deleteGasto } from './services/gastos'
 import { subscribeCatalogo } from './services/catalogo'
-import Dashboard    from './Dashboard'
-import Registros    from './Registros'
-import Catalogo     from './Catalogo'
-import Trabajadores from './Trabajadores'
-import Modal        from './Modal'
+import Dashboard from './Dashboard'
+import Registros from './Registros'
+import Catalogo  from './Catalogo'
+import Modal     from './Modal'
 
 function exportCSV(gastos) {
   const cols = ['# Factura','Descripcion','Categoria','Unidad','Precio Unitario','Metros','Cantidad','Total','Fecha','Notas']
@@ -31,10 +30,9 @@ function Sidebar({ tab, setTab, gastos, onAdd }) {
   const fillClass = pct > 90 ? 'over' : pct > 70 ? 'warn' : ''
 
   const NAV = [
-    { id: 'dashboard',    icon: '📊', label: 'Dashboard',  badge: null },
-    { id: 'registros',    icon: '📋', label: 'Registros',  badge: gastos.length },
-    { id: 'catalogo',     icon: '🧱', label: 'Catálogo',   badge: null },
-    { id: 'trabajadores', icon: '👷', label: 'Personal',   badge: null },
+    { id: 'dashboard', icon: '📊', label: 'Dashboard', badge: null },
+    { id: 'registros', icon: '📋', label: 'Registros', badge: gastos.length },
+    { id: 'catalogo',  icon: '🧱', label: 'Catálogo',  badge: null },
   ]
 
   return (
@@ -103,10 +101,9 @@ export default function App() {
   function doDelete() { deleteGasto(confirmId); setConfirmId(null); setModal(null) }
 
   const PAGE_TITLES = {
-    dashboard:    { title: 'Dashboard',  sub: 'Resumen general y gráficas' },
-    registros:    { title: 'Registros',  sub: 'Todos los gastos registrados' },
-    catalogo:     { title: 'Catálogo',   sub: 'Materiales y precios de referencia' },
-    trabajadores: { title: 'Personal',   sub: 'Trabajadores y asistencia diaria' },
+    dashboard: { title: 'Dashboard', sub: 'Resumen general y gráficas' },
+    registros:  { title: 'Registros', sub: 'Todos los gastos registrados' },
+    catalogo:   { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
   }
 
   return (
@@ -156,8 +153,7 @@ export default function App() {
                   onDelete={(id) => setConfirmId(id)}
                   onExport={() => exportCSV(gastos)} />
               )}
-              {tab === 'catalogo'     && <Catalogo />}
-              {tab === 'trabajadores' && <Trabajadores />}
+              {tab === 'catalogo' && <Catalogo />}
             </>
           )}
         </div>
@@ -179,11 +175,6 @@ export default function App() {
             onClick={() => setTab('catalogo')}>
             <span className="nav-icon">🧱</span>
             <span className="nav-label">Catálogo</span>
-          </button>
-          <button className={`nav-btn ${tab === 'trabajadores' ? 'nav-active' : ''}`}
-            onClick={() => setTab('trabajadores')}>
-            <span className="nav-icon">👷</span>
-            <span className="nav-label">Personal</span>
           </button>
         </nav>
       </div>
