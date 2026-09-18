@@ -3,7 +3,8 @@ import './App.css'
 import { CATS, PRESUPUESTO, COP, calcTotal, emptyForm } from './data'
 import { subscribeGastos, addGasto, updateGasto, deleteGasto } from './services/gastos'
 import { subscribeCatalogo } from './services/catalogo'
-import { getSession, logout, isAdmin } from './auth'
+import { getSession, saveSession, logout, isAdmin } from './auth'
+import { loginFirestore, seedAuthData } from './services/usuarios'
 import Dashboard from './Dashboard'
 import Registros from './Registros'
 import Catalogo  from './Catalogo'
@@ -101,6 +102,9 @@ export default function App() {
   const [modal, setModal]           = useState(null)
   const [confirmId, setConfirmId]   = useState(null)
 
+  // Sembrar colecciones de auth en Firestore si no existen
+  useEffect(() => { seedAuthData().catch(console.error) }, [])
+
   useEffect(() => subscribeGastos((data) => { setGastos(data); setLoading(false) }), [])
   useEffect(() => subscribeCatalogo((data) =>
     setCatalogo(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
@@ -110,7 +114,14 @@ export default function App() {
   const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
   const restante     = PRESUPUESTO - totalGastado
 
-  function handleLogin(s) { setSession(s); setTab('dashboard') }
+  async function handleLogin(username, password) {
+    const session = await loginFirestore(username, password)
+    if (!session) return false
+    saveSession(session)
+    setSession(session)
+    setTab('dashboard')
+    return true
+  }
   function handleLogout() { logout(); setSession(null) }
 
   function openAdd()   { setModal({ mode: 'add', form: emptyForm('materiales') }) }

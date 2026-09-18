@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { login } from './auth'
 
 export default function LoginPage({ onLogin }) {
   const [username, setUsername] = useState('')
@@ -7,19 +6,17 @@ export default function LoginPage({ onLogin }) {
   const [error, setError]       = useState('')
   const [loading, setLoading]   = useState(false)
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault()
     setError('')
     setLoading(true)
-    setTimeout(() => {
-      const session = login(username, password)
-      if (session) {
-        onLogin(session)
-      } else {
-        setError('Usuario o contraseña incorrectos')
-        setLoading(false)
-      }
-    }, 400)
+    try {
+      const ok = await onLogin(username, password)
+      if (!ok) setError('Usuario o contraseña incorrectos')
+    } catch {
+      setError('Error de conexión, intenta de nuevo')
+    }
+    setLoading(false)
   }
 
   return (
@@ -34,23 +31,15 @@ export default function LoginPage({ onLogin }) {
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="field">
             <label>Usuario</label>
-            <input
-              autoFocus autoComplete="username"
+            <input autoFocus autoComplete="username"
               placeholder="Ingresa tu usuario"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+              value={username} onChange={(e) => setUsername(e.target.value)} required />
           </div>
           <div className="field">
             <label>Contraseña</label>
-            <input
-              type="password" autoComplete="current-password"
+            <input type="password" autoComplete="current-password"
               placeholder="••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+              value={password} onChange={(e) => setPassword(e.target.value)} required />
           </div>
 
           {error && <div className="login-error">{error}</div>}
