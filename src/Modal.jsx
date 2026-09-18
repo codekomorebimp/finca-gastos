@@ -383,8 +383,8 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
             </button>
             <button type="submit" className="btn-main">
               {batchItems.length > 0
-                ? `💾 Guardar ${batchItems.length + 1} gastos`
-                : '💾 Guardar gasto'}
+                ? `Guardar ${batchItems.length + 1} gastos`
+                : 'Guardar gasto'}
             </button>
           </div>
         </form>

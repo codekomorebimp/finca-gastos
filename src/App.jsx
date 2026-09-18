@@ -6,7 +6,7 @@ import { subscribeCatalogo } from './services/catalogo'
 import { subscribeCatalogoObra } from './services/catalogoObra'
 import { subscribeObraEjecutada } from './services/obraEjecutada'
 import { getSession, saveSession, logout, isAdmin } from './auth'
-import { loginFirestore, seedAuthData } from './services/usuarios'
+import { loginFirestore, seedAuthData, ensureUser } from './services/usuarios'
 import Dashboard from './Dashboard'
 import Registros from './Registros'
 import Catalogo  from './Catalogo'
@@ -111,6 +111,7 @@ export default function App() {
 
   // Sembrar colecciones de auth en Firestore si no existen
   useEffect(() => { seedAuthData().catch(console.error) }, [])
+  useEffect(() => { ensureUser({ username: 'pablo', password: '123', nombre: 'Pablo', rolNombre: 'admin' }).catch(console.error) }, [])
 
   useEffect(() => subscribeGastos((data) => { setGastos(data); setLoading(false) }), [])
   useEffect(() => subscribeCatalogo((data) =>

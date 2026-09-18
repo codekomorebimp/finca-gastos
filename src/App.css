@@ -751,10 +751,10 @@ body {
 }
 .btn-add-lote:hover { background: #dbeafe; }
 
-.modal-actions { display: flex; gap: 10px; padding: 6px 20px 20px; }
+.modal-actions { display: flex; gap: 10px; padding: 12px 20px 24px; }
 .batch-actions { flex-direction: column; gap: 10px; padding: 12px 20px 24px; }
-.batch-actions .btn-main { height: 54px; font-size: 16px; }
-.btn-main { flex: 1; height: 50px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: opacity 0.15s; }
+.batch-actions .btn-main { height: 56px; font-size: 16px; }
+.btn-main { flex: 1; height: 54px; border-radius: 14px; border: none; font-size: 16px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; box-shadow: 0 4px 14px rgba(37,99,235,0.3); transition: opacity 0.15s; letter-spacing: 0.2px; }
 .btn-main:hover { opacity: 0.92; }
 .btn-main:active { opacity: 0.85; }
 .btn-del  { height: 50px; width: 50px; border-radius: 12px; border: 1.5px solid #fecaca; background: var(--red-bg); color: var(--red); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.12s; }

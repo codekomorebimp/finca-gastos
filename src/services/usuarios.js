@@ -1,6 +1,6 @@
 import {
   collection, doc, getDoc, getDocs,
-  addDoc, query, where,
+  addDoc, query, where, setDoc,
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -75,4 +75,15 @@ export const seedAuthData = async () => {
   ]
 
   await Promise.all(usuarios.map(u => addDoc(collection(db, USERS), u)))
+}
+
+/* ── Agrega un usuario si no existe aún ── */
+export const ensureUser = async ({ username, password, nombre, rolNombre }) => {
+  const snap = await getDocs(query(collection(db, USERS), where('username', '==', username)))
+  if (!snap.empty) return
+
+  const rolesSnap = await getDocs(collection(db, ROLES))
+  const rolId = rolesSnap.docs.find(d => d.data().nombre === rolNombre)?.id ?? ''
+
+  await addDoc(collection(db, USERS), { username, password, nombre, rolId, rolNombre, activo: true })
 }
