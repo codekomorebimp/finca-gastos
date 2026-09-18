@@ -1195,25 +1195,6 @@ body {
 .fac-footer-label { }
 .fac-footer-total { font-size: 20px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
 
-/* ── OBRA picker de trabajo ─────────────────────────── */
-.obra-picker {
-  display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;
-}
-.obra-pick-card {
-  display: flex; flex-direction: column; gap: 2px;
-  padding: 10px 12px; border-radius: 10px; cursor: pointer; text-align: left;
-  border: 1.5px solid var(--border); background: var(--card);
-  transition: border-color 0.12s, background 0.12s;
-}
-.obra-pick-card:hover { border-color: #d97706; }
-.obra-pick-active {
-  border-color: #d97706 !important; background: #fffbeb;
-  box-shadow: 0 0 0 2px #fde68a;
-}
-.obra-pick-name  { font-size: 13px; font-weight: 700; color: var(--text); line-height: 1.2; }
-.obra-pick-price { font-size: 13px; font-weight: 800; color: #d97706; font-variant-numeric: tabular-nums; margin-top: 4px; }
-.obra-pick-unit  { font-size: 11px; color: var(--text-muted); }
-
 /* ── OBRA tab style ─────────────────────────────────── */
 .fac-tab-obra.fac-tab-active { border-color: #d97706; color: #d97706; background: #fffbeb; }
 .fac-tab-obra.fac-tab-active .fac-tab-icon { background: #fef3c7; }
