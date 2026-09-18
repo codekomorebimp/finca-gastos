@@ -194,16 +194,13 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
           </div>
         </div>
 
-        {/* Fila 2: Búsqueda con limpiar integrado */}
+        {/* Fila 2: Búsqueda */}
         <div className="filter-group">
           <div className="filter-label">Buscar</div>
           <div className="reg-search-box">
             <span className="search-icon" style={{ fontSize: 13 }}>🔍</span>
             <input className="search-input" placeholder="Descripción, factura..."
               value={search} onChange={e => setSearch(e.target.value)} />
-            {hayFiltros && (
-              <button className="reg-clear-btn" onClick={limpiar} title="Limpiar filtros">✕</button>
-            )}
           </div>
         </div>
 
@@ -225,7 +222,7 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
             </select>
           </div>
         )}
-        <div className="filter-group">
+        <div className="filter-group reg-filter-dates">
           <div className="filter-label">Rango de fechas</div>
           <div className="filter-date-row">
             <input type="date" className="filter-date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} />
@@ -233,6 +230,14 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
             <input type="date" className="filter-date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
           </div>
         </div>
+
+        {/* Botón limpiar: celda propia, siempre visible cuando hay filtros */}
+        {hayFiltros && (
+          <div className="filter-group reg-filter-clear">
+            <div className="filter-label">&nbsp;</div>
+            <button className="chip chip-clear reg-chip-clear" onClick={limpiar}>✕ Limpiar filtros</button>
+          </div>
+        )}
       </div>
 
       <div className="reg-toolbar">

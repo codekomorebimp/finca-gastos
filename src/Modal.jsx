@@ -44,25 +44,27 @@ function ItemForm({ item, onChange, catalogo, gastos, factura }) {
       </div>
 
       <div className="form-body" style={{ paddingTop: 0 }}>
-        {item.categoria === 'materiales' && (
+        {item.categoria === 'materiales' ? (
+          /* Materiales: el select ES la descripción */
           <div className="field">
-            <label>Catálogo</label>
-            <select value={item.catalogoId ? item.descripcion : ''} onChange={e => {
-              const found = catalogo.find(c => c.nombre === e.target.value)
+            <label>Material</label>
+            <select value={item.catalogoId || ''} onChange={e => {
+              const found = catalogo.find(c => c.id === e.target.value)
               if (!found) return
-              onChange({ ...item, catalogoId: found.id, descripcion: '', unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' })
+              onChange({ ...item, catalogoId: found.id, descripcion: found.nombre, unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' })
             }}>
               <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
-              {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
+              {catalogo.map(c => <option key={c.id} value={c.id}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
             </select>
           </div>
+        ) : (
+          /* Mano de obra / Otro: descripción libre */
+          <div className="field">
+            <label>Descripción</label>
+            <input placeholder={item.categoria === 'mano_obra' ? 'Ej: Maestro Pedro - cimentación' : 'Ej: Transporte de materiales'}
+              value={item.descripcion} onChange={e => ch('descripcion', e.target.value)} required />
+          </div>
         )}
-
-        <div className="field">
-          <label>Descripción</label>
-          <input placeholder={item.categoria === 'mano_obra' ? 'Ej: Maestro Pedro' : 'Ej: Cemento gris x 50kg'}
-            value={item.descripcion} onChange={e => ch('descripcion', e.target.value)} required />
-        </div>
 
         <div className="field-row">
           <div className="field">
@@ -179,23 +181,24 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
           </div>
           <form onSubmit={onSubmit}>
             <div className="form-body">
-              {form.categoria === 'materiales' && (
+              {form.categoria === 'materiales' ? (
                 <div className="field">
-                  <label>Catálogo</label>
-                  <select value={form.catalogoId ? form.descripcion : ''} onChange={e => {
-                    const item = catalogo.find(c => c.nombre === e.target.value)
-                    if (!item) return
-                    setModal(m => ({ ...m, form: { ...m.form, catalogoId: item.id, descripcion: '', unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' } }))
+                  <label>Material</label>
+                  <select value={form.catalogoId || ''} onChange={e => {
+                    const found = catalogo.find(c => c.id === e.target.value)
+                    if (!found) return
+                    setModal(m => ({ ...m, form: { ...m.form, catalogoId: found.id, descripcion: found.nombre, unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' } }))
                   }}>
                     <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
-                    {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
+                    {catalogo.map(c => <option key={c.id} value={c.id}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
                   </select>
                 </div>
+              ) : (
+                <div className="field">
+                  <label>Descripción</label>
+                  <input placeholder="Descripción" value={form.descripcion} onChange={e => change('descripcion', e.target.value)} required autoFocus />
+                </div>
               )}
-              <div className="field">
-                <label>Descripción</label>
-                <input placeholder="Descripción" value={form.descripcion} onChange={e => change('descripcion', e.target.value)} required autoFocus />
-              </div>
               <div className="field-row">
                 <div className="field">
                   <label>Precio / {form.unidad || 'unidad'} ($)</label>
@@ -277,7 +280,7 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
   }
 
   function agregarAlLote() {
-    if (!activeItem.descripcion?.trim() || !activeItem.precio_unitario) return
+    if (!activeItem.precio_unitario) return
     const showM = activeItem.categoria === 'materiales' ? !!activeItem.porMetro : esPorMetro(activeItem.unidad)
     if (showM && !activeItem.metros) return
     if (!showM && !activeItem.cantidad) return
@@ -293,7 +296,7 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
     e.preventDefault()
     if (!shared.factura?.trim() || !shared.fecha) return
     const showM = activeItem.categoria === 'materiales' ? !!activeItem.porMetro : esPorMetro(activeItem.unidad)
-    const itemOk = activeItem.descripcion?.trim() && activeItem.precio_unitario &&
+    const itemOk = activeItem.precio_unitario &&
       (showM ? activeItem.metros : activeItem.cantidad)
 
     const todos = [
@@ -345,7 +348,9 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
                 return (
                   <div key={i} className="batch-item">
                     <div className="batch-item-info">
-                      <span className="batch-item-desc">{it.descripcion}</span>
+                      <span className="batch-item-desc">
+                        {it.descripcion || catalogo.find(c => c.id === it.catalogoId)?.nombre || '—'}
+                      </span>
                       <span className="batch-item-sub">
                         {showM ? `${it.metros} ${it.unidad}` : `${it.cantidad} ${it.unidad}`}
                         {' · '}{COP(calcTotal({ ...it, ...shared }))}
