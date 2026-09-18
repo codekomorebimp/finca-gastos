@@ -79,6 +79,38 @@ function BudgetCard({ totalGastado }) {
   )
 }
 
+/* ── Barras verticales por mes ── */
+const MESES = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
+function fmtMes(ym) {
+  const [y, m] = ym.split('-')
+  return `${MESES[+m - 1]}\n'${y.slice(2)}`
+}
+
+function BarChartMes({ data }) {
+  if (!data.length) return null
+  const max = Math.max(...data.map(d => d.total), 1)
+  return (
+    <div className="mes-chart">
+      {data.map((d, i) => {
+        const h = Math.max((d.total / max) * 100, 3)
+        const [mes, yr] = fmtMes(d.mes).split('\n')
+        return (
+          <div key={d.mes} className="mes-col">
+            <div className="mes-val">{COP(d.total)}</div>
+            <div className="mes-track">
+              <div className="mes-fill" style={{
+                height: `${h}%`,
+                background: `hsl(${220 - i * 15}, 72%, ${48 + i * 3}%)`
+              }} />
+            </div>
+            <div className="mes-label">{mes}<br /><span>{yr}</span></div>
+          </div>
+        )
+      })}
+    </div>
+  )
+}
+
 /* ── Balance mano de obra ── */
 function ObraBalanceCard({ obraEjecutada, gastos }) {
   const ejecutado = obraEjecutada.reduce((s, r) => s + r.precio * r.cantidad, 0)
@@ -148,6 +180,19 @@ export default function Dashboard({ gastos, obraEjecutada = [] }) {
     })
     return Object.entries(map).map(([name, value]) => ({ name, value }))
       .sort((a, b) => b.value - a.value).slice(0, 8)
+  }, [gastos])
+
+  const gastoPorMes = useMemo(() => {
+    const map = {}
+    gastos.forEach(g => {
+      if (!g.fecha) return
+      const mes = g.fecha.slice(0, 7)
+      map[mes] = (map[mes] || 0) + calcTotal(g)
+    })
+    return Object.entries(map)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .slice(-6)
+      .map(([mes, total]) => ({ mes, total }))
   }, [gastos])
 
   const maxMat  = materialesDetalle[0]?.gasto || 1
@@ -253,6 +298,14 @@ export default function Dashboard({ gastos, obraEjecutada = [] }) {
               </div>
             ))}
           </div>
+        </div>
+      )}
+
+      {/* Gasto por mes */}
+      {gastoPorMes.length > 0 && (
+        <div className="db-chart-card db-chart-teal">
+          <div className="db-chart-title">📅 Gasto por mes</div>
+          <BarChartMes data={gastoPorMes} />
         </div>
       )}
 

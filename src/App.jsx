@@ -107,6 +107,7 @@ export default function App() {
   const [tab, setTab]               = useState('dashboard')
   const [modal, setModal]           = useState(null)
   const [confirmId, setConfirmId]   = useState(null)
+  const [drawerOpen, setDrawerOpen] = useState(false)
 
   // Sembrar colecciones de auth en Firestore si no existen
   useEffect(() => { seedAuthData().catch(console.error) }, [])
@@ -233,26 +234,62 @@ export default function App() {
           </button>
           {admin && (
             <>
-              <button className={`nav-btn ${tab === 'registros' ? 'nav-active' : ''}`} onClick={() => setTab('registros')}>
-                <span className="nav-icon">📋</span>
-                <span className="nav-label">Registros</span>
-              </button>
               <button className="nav-fab" onClick={openAdd}>+</button>
-              <button className={`nav-btn ${tab === 'facturas' ? 'nav-active' : ''}`} onClick={() => setTab('facturas')}>
-                <span className="nav-icon">🧾</span>
-                <span className="nav-label">Facturas</span>
-              </button>
-              <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`} onClick={() => setTab('catalogo')}>
-                <span className="nav-icon">🧱</span>
-                <span className="nav-label">Catálogo</span>
-              </button>
-              <button className={`nav-btn ${tab === 'obra' ? 'nav-active' : ''}`} onClick={() => setTab('obra')}>
-                <span className="nav-icon">👷</span>
-                <span className="nav-label">Obra</span>
+              <button className={`nav-btn ${['registros','facturas','catalogo','obra'].includes(tab) ? 'nav-active' : ''}`}
+                onClick={() => setDrawerOpen(true)}>
+                <span className="nav-icon nav-hamburger">
+                  <span /><span /><span />
+                </span>
+                <span className="nav-label">Menú</span>
               </button>
             </>
           )}
         </nav>
+      </div>
+
+      {/* Drawer lateral móvil */}
+      {drawerOpen && <div className="drawer-overlay" onClick={() => setDrawerOpen(false)} />}
+      <div className={`mobile-drawer ${drawerOpen ? 'drawer-open' : ''}`}>
+        <div className="drawer-header">
+          <div>
+            <div className="drawer-logo">🏗️ Finca JFM</div>
+            <div className="drawer-logo-sub">Control de gastos</div>
+          </div>
+          <button className="drawer-close" onClick={() => setDrawerOpen(false)}>✕</button>
+        </div>
+        <div className="drawer-nav">
+          {[
+            { id: 'registros', icon: '📋', label: 'Registros',    color: '#2563eb', bg: '#dbeafe' },
+            { id: 'facturas',  icon: '🧾', label: 'Facturas',     color: '#059669', bg: '#d1fae5' },
+            { id: 'catalogo',  icon: '🧱', label: 'Catálogo',     color: '#d97706', bg: '#fde68a' },
+            { id: 'obra',      icon: '👷', label: 'Mano de obra', color: '#7c3aed', bg: '#ede9fe' },
+          ].map(item => (
+            <button key={item.id}
+              className={`drawer-item ${tab === item.id ? 'drawer-item-active' : ''}`}
+              onClick={() => { setTab(item.id); setDrawerOpen(false) }}>
+              <span className="drawer-item-badge" style={{ background: item.bg, color: item.color }}>
+                {item.icon}
+              </span>
+              <span className="drawer-item-label">{item.label}</span>
+              <span className="drawer-item-arrow">›</span>
+            </button>
+          ))}
+        </div>
+        <div className="drawer-footer">
+          <div className="drawer-user-info">
+            <span className="drawer-user-name">{session?.nombre}</span>
+            <span className={`sidebar-user-role ${session?.role}`}>
+              {session?.role === 'admin' ? 'Admin' : 'Vendedor'}
+            </span>
+          </div>
+          <button className="sidebar-logout-btn" onClick={handleLogout} title="Cerrar sesión">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
+        </div>
       </div>
 
       <Modal modal={modal} setModal={setModal} onSubmit={handleSubmit}
