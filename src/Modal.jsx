@@ -317,7 +317,7 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
       <div className="modal">
         <div className="modal-handle" />
         <div className="modal-header">
-          <div className="modal-title">Nuevo gasto</div>
+          <div className="modal-title">Nueva Inversión</div>
           <button className="btn-close" onClick={() => { setBatchItems([]); setCurItem(null); setModal(null) }}>✕</button>
         </div>
 
