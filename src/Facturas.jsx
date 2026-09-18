@@ -1,6 +1,12 @@
 import { useState, useMemo } from 'react'
 import { CATS, COP, calcTotal, fmtDate, catOf, esPorMetro } from './data'
 
+const TABS = [
+  { id: 'materiales', label: 'Materiales', icon: '🧱', dotClass: 'mat' },
+  { id: 'mano_obra',  label: 'Mano de obra', icon: '👷', dotClass: 'obra' },
+  { id: 'otro',       label: 'Otro', icon: '📦', dotClass: 'otro' },
+]
+
 function FacturaDetalle({ fac, onBack }) {
   const total = fac.items.reduce((s, g) => s + calcTotal(g), 0)
   const sorted = [...fac.items].sort((a, b) => a.fecha.localeCompare(b.fecha))
@@ -70,29 +76,37 @@ function FacturaDetalle({ fac, onBack }) {
   )
 }
 
+function buildFacturas(gastos) {
+  const map = {}
+  gastos.forEach(g => {
+    const key = g.factura?.trim() || '__sin__'
+    if (!map[key]) map[key] = { factura: key, esSinFactura: key === '__sin__', items: [], fechas: [] }
+    map[key].items.push(g)
+    if (g.fecha) map[key].fechas.push(g.fecha)
+  })
+  return Object.values(map)
+    .map(f => {
+      const sorted = [...f.fechas].sort()
+      return { ...f, total: f.items.reduce((s, g) => s + calcTotal(g), 0), fechaMin: sorted[0] ?? '', fechaMax: sorted.at(-1) ?? '' }
+    })
+    .sort((a, b) => {
+      if (a.esSinFactura) return 1
+      if (b.esSinFactura) return -1
+      return b.fechaMax.localeCompare(a.fechaMax)
+    })
+}
+
 export default function Facturas({ gastos }) {
+  const [tabCat,   setTabCat]   = useState('materiales')
   const [search,   setSearch]   = useState('')
   const [selected, setSelected] = useState(null)
 
-  const facturas = useMemo(() => {
-    const map = {}
-    gastos.forEach(g => {
-      const key = g.factura?.trim() || '__sin__'
-      if (!map[key]) map[key] = { factura: key, esSinFactura: key === '__sin__', items: [], fechas: [] }
-      map[key].items.push(g)
-      if (g.fecha) map[key].fechas.push(g.fecha)
-    })
-    return Object.values(map)
-      .map(f => {
-        const sorted = [...f.fechas].sort()
-        return { ...f, total: f.items.reduce((s, g) => s + calcTotal(g), 0), fechaMin: sorted[0] ?? '', fechaMax: sorted.at(-1) ?? '' }
-      })
-      .sort((a, b) => {
-        if (a.esSinFactura) return 1
-        if (b.esSinFactura) return -1
-        return b.fechaMax.localeCompare(a.fechaMax)
-      })
-  }, [gastos])
+  const gastosFiltrados = useMemo(
+    () => gastos.filter(g => g.categoria === tabCat),
+    [gastos, tabCat]
+  )
+
+  const facturas = useMemo(() => buildFacturas(gastosFiltrados), [gastosFiltrados])
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
@@ -102,73 +116,96 @@ export default function Facturas({ gastos }) {
 
   const conNumero = facturas.filter(f => !f.esSinFactura).length
 
-  if (gastos.length === 0) return (
-    <div className="page-wrap">
-      <div className="empty">
-        <div className="empty-icon">🧾</div>
-        <h3>Sin registros</h3>
-        <p>Agrega gastos con número de factura para verlos agrupados aquí.</p>
-      </div>
-    </div>
-  )
-
   const selFac = selected ? facturas.find(f => f.factura === selected) : null
+
+  function handleTabChange(id) {
+    setTabCat(id)
+    setSelected(null)
+    setSearch('')
+  }
+
   if (selFac) return <FacturaDetalle fac={selFac} onBack={() => setSelected(null)} />
+
+  const tabInfo = TABS.find(t => t.id === tabCat)
 
   return (
     <div className="page-wrap">
-      <div className="search-wrap" style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 14 }}>
-        <div className="search-wrap-inner">
-          <span className="search-icon">🔍</span>
-          <input className="search-input" placeholder="Buscar por número de factura..."
-            value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
+      {/* Tabs de categoría */}
+      <div className="fac-tabs">
+        {TABS.map(t => (
+          <button
+            key={t.id}
+            className={`fac-tab fac-tab-${t.dotClass} ${tabCat === t.id ? 'fac-tab-active' : ''}`}
+            onClick={() => handleTabChange(t.id)}
+          >
+            <span className="fac-tab-icon">{t.icon}</span>
+            <span className="fac-tab-label">{t.label}</span>
+          </button>
+        ))}
       </div>
 
-      <div className="pg-toolbar" style={{ paddingTop: 0 }}>
-        <span className="reg-count">
-          {conNumero} factura{conNumero !== 1 ? 's' : ''}
-          {facturas.some(f => f.esSinFactura) && ` · ${facturas.find(f => f.esSinFactura)?.items.length} sin número`}
-        </span>
-      </div>
-
-      {filtered.length === 0 ? (
+      {gastosFiltrados.length === 0 ? (
         <div className="empty">
-          <div className="empty-icon">🔍</div>
-          <h3>Sin resultados</h3>
-          <p>No hay facturas con ese número.</p>
+          <div className="empty-icon">{tabInfo.icon}</div>
+          <h3>Sin registros de {tabInfo.label.toLowerCase()}</h3>
+          <p>Agrega gastos en esta categoría para verlos aquí.</p>
         </div>
       ) : (
-        <div className="fac-list">
-          {filtered.map(f => (
-            <div key={f.factura} className={`fac-card ${f.esSinFactura ? 'fac-card-sin' : ''}`} onClick={() => setSelected(f.factura)}>
-              <div className="fac-card-icon">{f.esSinFactura ? '📋' : '🧾'}</div>
-              <div className="fac-card-body">
-                <div className="fac-card-num">
-                  {f.esSinFactura ? 'Sin número de factura' : `Factura # ${f.factura}`}
-                </div>
-                <div className="fac-card-meta">
-                  {f.items.length} producto{f.items.length !== 1 ? 's' : ''}
-                  {f.fechaMin && <> · {fmtDate(f.fechaMin)}{f.fechaMin !== f.fechaMax ? ` → ${fmtDate(f.fechaMax)}` : ''}</>}
-                </div>
-                <div className="fac-card-cats">
-                  {[...new Set(f.items.map(g => g.categoria))].map(catId => {
-                    const cat = CATS.find(c => c.id === catId)
-                    return cat ? <span key={catId} className={`tbl-cat-badge tbl-cat-${cat.dotClass}`}>{cat.icon} {cat.label}</span> : null
-                  })}
-                </div>
-              </div>
-              <div className="fac-card-right">
-                <div className="fac-card-total">{COP(f.total)}</div>
-                <div className="fac-card-arrow">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="9 18 15 12 9 6" />
-                  </svg>
-                </div>
-              </div>
+        <>
+          <div className="search-wrap" style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 14 }}>
+            <div className="search-wrap-inner">
+              <span className="search-icon">🔍</span>
+              <input className="search-input" placeholder="Buscar por número de factura..."
+                value={search} onChange={e => setSearch(e.target.value)} />
             </div>
-          ))}
-        </div>
+          </div>
+
+          <div className="pg-toolbar" style={{ paddingTop: 0 }}>
+            <span className="reg-count">
+              {conNumero} factura{conNumero !== 1 ? 's' : ''}
+              {facturas.some(f => f.esSinFactura) && ` · ${facturas.find(f => f.esSinFactura)?.items.length} sin número`}
+            </span>
+          </div>
+
+          {filtered.length === 0 ? (
+            <div className="empty">
+              <div className="empty-icon">🔍</div>
+              <h3>Sin resultados</h3>
+              <p>No hay facturas con ese número.</p>
+            </div>
+          ) : (
+            <div className="fac-list">
+              {filtered.map(f => (
+                <div key={f.factura} className={`fac-card ${f.esSinFactura ? 'fac-card-sin' : ''}`} onClick={() => setSelected(f.factura)}>
+                  <div className="fac-card-icon">{f.esSinFactura ? '📋' : '🧾'}</div>
+                  <div className="fac-card-body">
+                    <div className="fac-card-num">
+                      {f.esSinFactura ? 'Sin número de factura' : `Factura # ${f.factura}`}
+                    </div>
+                    <div className="fac-card-meta">
+                      {f.items.length} producto{f.items.length !== 1 ? 's' : ''}
+                      {f.fechaMin && <> · {fmtDate(f.fechaMin)}{f.fechaMin !== f.fechaMax ? ` → ${fmtDate(f.fechaMax)}` : ''}</>}
+                    </div>
+                    <div className="fac-card-cats">
+                      {[...new Set(f.items.map(g => g.categoria))].map(catId => {
+                        const cat = CATS.find(c => c.id === catId)
+                        return cat ? <span key={catId} className={`tbl-cat-badge tbl-cat-${cat.dotClass}`}>{cat.icon} {cat.label}</span> : null
+                      })}
+                    </div>
+                  </div>
+                  <div className="fac-card-right">
+                    <div className="fac-card-total">{COP(f.total)}</div>
+                    <div className="fac-card-arrow">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </>
       )}
       <div style={{ height: 16 }} />
     </div>

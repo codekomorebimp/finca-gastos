@@ -993,6 +993,27 @@ body {
 }
 
 /* ── FACTURAS ─────────────────────────────────────────── */
+/* Tabs de categoría en Facturas */
+.fac-tabs {
+  display: flex; gap: 8px; padding: 0 16px 16px;
+  border-bottom: 1px solid var(--border); margin-bottom: 16px;
+}
+@media (min-width: 768px) { .fac-tabs { padding: 0 0 16px; } }
+
+.fac-tab {
+  flex: 1; display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 10px 8px; border-radius: 12px; border: 1.5px solid var(--border);
+  background: var(--card); color: var(--text-soft); font-size: 13px; font-weight: 600;
+  cursor: pointer; transition: all 0.15s;
+}
+.fac-tab:hover { border-color: #cbd5e1; color: var(--text); }
+.fac-tab-icon  { font-size: 16px; line-height: 1; }
+.fac-tab-label { white-space: nowrap; }
+
+.fac-tab-mat.fac-tab-active  { background: var(--mat-bg);  color: var(--mat);  border-color: var(--mat);  }
+.fac-tab-obra.fac-tab-active { background: var(--obra-bg); color: var(--obra); border-color: var(--obra); }
+.fac-tab-otro.fac-tab-active { background: var(--otro-bg); color: var(--otro); border-color: var(--otro); }
+
 .fac-list { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
 @media (min-width: 768px) { .fac-list { padding: 0; } }
 
