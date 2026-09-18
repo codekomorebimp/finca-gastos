@@ -126,7 +126,7 @@ body {
 /* ── LOGIN ───────────────────────────────────────────── */
 .login-bg {
   min-height: 100svh; display: flex; align-items: center; justify-content: center;
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 60%, #3730a3 100%);
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a2e 50%, #16213e 100%);
   padding: 20px;
 }
 .login-card {
