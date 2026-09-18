@@ -50,6 +50,7 @@ body {
 
 .main-area {
   flex: 1;
+  min-width: 0;
   display: flex;
   flex-direction: column;
   min-height: 100svh;
@@ -63,6 +64,7 @@ body {
     margin-left: var(--sidebar-w);
     padding-bottom: 0;
     height: 100svh;
+    overflow-x: hidden;
     overflow-y: auto;
   }
   .bottom-nav { display: none !important; }
@@ -222,7 +224,7 @@ body {
 .page-subtitle { font-size: 13px; color: var(--text-soft); margin-top: 2px; }
 
 /* ── PAGE CONTENT ────────────────────────────────────── */
-.page-content { flex: 1; }
+.page-content { flex: 1; min-width: 0; width: 100%; box-sizing: border-box; }
 
 /* ── BOTTOM NAV (mobile) ─────────────────────────────── */
 .bottom-nav {
@@ -268,7 +270,7 @@ body {
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* ── DASHBOARD ───────────────────────────────────────── */
-.db-wrap { padding: 16px 16px 0; }
+.db-wrap { padding: 16px 16px 0; box-sizing: border-box; width: 100%; }
 @media (min-width: 768px) { .db-wrap { padding: 28px 32px 0; } }
 
 /* Budget card - solo mobile */
@@ -414,7 +416,7 @@ body {
 .db-qty-gasto { font-size: 11px; color: var(--text-muted); font-variant-numeric: tabular-nums; }
 
 /* ── REGISTROS ───────────────────────────────────────── */
-.reg-wrap { padding: 12px 0 0; }
+.reg-wrap { padding: 12px 0 0; box-sizing: border-box; width: 100%; }
 @media (min-width: 768px) { .reg-wrap { padding: 24px 32px 0; } }
 
 .reg-filters {
@@ -669,7 +671,7 @@ body {
 .tbl-cat-otro { background: var(--otro-bg); color: var(--otro); }
 
 /* ── PÁGINAS CATÁLOGO Y TRABAJADORES ─────────────────── */
-.page-wrap { padding: 12px 0 0; }
+.page-wrap { padding: 12px 0 0; box-sizing: border-box; width: 100%; }
 @media (min-width: 768px) { .page-wrap { padding: 24px 32px 0; } }
 
 .pg-toolbar {
