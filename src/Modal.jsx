@@ -46,14 +46,14 @@ function ItemForm({ item, onChange, catalogo, gastos, factura }) {
       <div className="form-body" style={{ paddingTop: 0 }}>
         {item.categoria === 'materiales' && (
           <div className="field">
-            <label>Seleccionar del catálogo</label>
-            <select value="" onChange={e => {
+            <label>Catálogo</label>
+            <select value={item.catalogoId ? item.descripcion : ''} onChange={e => {
               const found = catalogo.find(c => c.nombre === e.target.value)
               if (!found) return
               onChange({ ...item, catalogoId: found.id, descripcion: found.nombre, unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' })
             }}>
-              <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Elegir material'}</option>
-              {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre} — {COP(c.precio)} / {c.unidad}</option>)}
+              <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
+              {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
             </select>
           </div>
         )}
@@ -181,14 +181,14 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
             <div className="form-body">
               {form.categoria === 'materiales' && (
                 <div className="field">
-                  <label>Seleccionar del catálogo</label>
-                  <select value="" onChange={e => {
+                  <label>Catálogo</label>
+                  <select value={form.catalogoId ? form.descripcion : ''} onChange={e => {
                     const item = catalogo.find(c => c.nombre === e.target.value)
                     if (!item) return
                     setModal(m => ({ ...m, form: { ...m.form, catalogoId: item.id, descripcion: item.nombre, unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' } }))
                   }}>
-                    <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Elegir material'}</option>
-                    {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre} — {COP(c.precio)} / {c.unidad}</option>)}
+                    <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
+                    {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
                   </select>
                 </div>
               )}
@@ -372,14 +372,14 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
             factura={shared.factura}
           />
 
-          <div className="modal-actions" style={{ flexDirection: 'column', gap: 8 }}>
+          <div className="modal-actions batch-actions">
             <button type="button" className="btn-add-lote" onClick={agregarAlLote}>
               + Agregar otro ítem
             </button>
-            <button type="submit" className="btn-main" disabled={!canSave && batchItems.length === 0}>
+            <button type="submit" className="btn-main">
               {batchItems.length > 0
-                ? `Guardar ${batchItems.length + 1} gastos`
-                : 'Guardar gasto'}
+                ? `💾 Guardar ${batchItems.length + 1} gastos`
+                : '💾 Guardar gasto'}
             </button>
           </div>
         </form>

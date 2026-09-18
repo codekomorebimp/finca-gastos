@@ -434,6 +434,7 @@ body {
   }
   .reg-filters .filter-group:first-child { grid-column: 1 / -1; }
   .reg-filters .filter-group { min-width: 0; }
+  .reg-filters .chip-clear { grid-column: 4; grid-row: 2; align-self: end; white-space: nowrap; }
   .filter-date-row { flex-wrap: nowrap; }
 }
 
@@ -632,13 +633,15 @@ body {
   content: ''; flex: 1; height: 1px; background: var(--border);
 }
 .btn-add-lote {
-  width: 100%; height: 44px; border-radius: 12px; border: 1.5px dashed var(--mat);
+  width: 100%; height: 48px; border-radius: 12px; border: 1.5px dashed var(--mat);
   background: var(--mat-bg); color: var(--mat); font-size: 14px; font-weight: 700;
   cursor: pointer; transition: background 0.12s;
 }
 .btn-add-lote:hover { background: #dbeafe; }
 
 .modal-actions { display: flex; gap: 10px; padding: 6px 20px 20px; }
+.batch-actions { flex-direction: column; gap: 10px; padding: 12px 20px 24px; }
+.batch-actions .btn-main { height: 54px; font-size: 16px; }
 .btn-main { flex: 1; height: 50px; border-radius: 12px; border: none; font-size: 15px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; box-shadow: 0 4px 12px rgba(37,99,235,0.3); transition: opacity 0.15s; }
 .btn-main:hover { opacity: 0.92; }
 .btn-main:active { opacity: 0.85; }
