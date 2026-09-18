@@ -314,15 +314,20 @@ export default function ObraPage({ catalogoObra, obraEjecutada }) {
                 <div className="form-body">
                   <div className="field">
                     <label>Trabajo</label>
-                    <select required value={modal.form.catalogoObraId}
-                      onChange={e => ch('catalogoObraId', e.target.value)}>
-                      <option value="">Selecciona un trabajo...</option>
+                    <div className="obra-picker">
                       {catalogoObra.map(c => (
-                        <option key={c.id} value={c.id}>
-                          {c.nombre} — {COP(c.precio)} / {c.unidad}
-                        </option>
+                        <button key={c.id} type="button"
+                          className={`obra-pick-card ${modal.form.catalogoObraId === c.id ? 'obra-pick-active' : ''}`}
+                          onClick={() => ch('catalogoObraId', c.id)}>
+                          <span className="obra-pick-name">{c.nombre}</span>
+                          <span className="obra-pick-price">{COP(c.precio)}</span>
+                          <span className="obra-pick-unit">/ {c.unidad}</span>
+                        </button>
                       ))}
-                    </select>
+                    </div>
+                    <input type="text" required readOnly tabIndex={-1}
+                      value={modal.form.catalogoObraId}
+                      style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', height: 0 }} />
                   </div>
                   <div className="field-row">
                     <div className="field">
