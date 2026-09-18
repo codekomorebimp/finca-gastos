@@ -26,12 +26,24 @@
 
 body {
   font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-  background: var(--bg);
+  background: linear-gradient(-45deg, #eef2ff, #f0f9ff, #fdf4ff, #f0f4ff, #e8f4fd);
+  background-size: 400% 400%;
+  animation: bgPulse 22s ease infinite;
   color: var(--text);
   min-height: 100svh;
   -webkit-tap-highlight-color: transparent;
   font-size: 14px;
 }
+
+@keyframes bgPulse {
+  0%   { background-position: 0% 50%; }
+  50%  { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+/* ── Ocultar scrollbars en toda la app ── */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
 
 /* ── LAYOUT ──────────────────────────────────────────── */
 .app-shell { display: flex; min-height: 100svh; }
@@ -753,8 +765,7 @@ body {
 
 .modal-actions { display: flex; gap: 10px; padding: 16px 20px 28px; }
 .batch-actions { flex-direction: column; gap: 10px; padding: 16px 20px 28px; }
-.batch-actions .btn-main { height: 62px; font-size: 17px; }
-.btn-main { flex: 1; height: 60px; border-radius: 16px; border: none; font-size: 17px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; box-shadow: 0 4px 16px rgba(37,99,235,0.35); transition: opacity 0.15s; letter-spacing: 0.3px; padding: 0 28px; }
+.btn-main { flex: 1; padding: 13px 28px; border-radius: 16px; border: none; font-size: 17px; font-weight: 700; cursor: pointer; background: linear-gradient(135deg, #1d4ed8, #3b82f6); color: #fff; box-shadow: 0 4px 16px rgba(37,99,235,0.35); transition: opacity 0.15s; letter-spacing: 0.3px; display: flex; align-items: center; justify-content: center; line-height: 1.2; }
 .btn-main:hover { opacity: 0.92; }
 .btn-main:active { opacity: 0.85; }
 .btn-del  { height: 50px; width: 50px; border-radius: 12px; border: 1.5px solid #fecaca; background: var(--red-bg); color: var(--red); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.12s; }
