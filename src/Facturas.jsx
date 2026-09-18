@@ -2,13 +2,13 @@ import { useState, useMemo } from 'react'
 import { CATS, COP, calcTotal, fmtDate, catOf, esPorMetro } from './data'
 
 const TABS = [
-  { id: 'materiales', label: 'Materiales', icon: '🧱', dotClass: 'mat' },
+  { id: 'materiales', label: 'Materiales',   icon: '🧱', dotClass: 'mat'  },
   { id: 'mano_obra',  label: 'Mano de obra', icon: '👷', dotClass: 'obra' },
-  { id: 'otro',       label: 'Otro', icon: '📦', dotClass: 'otro' },
+  { id: 'otro',       label: 'Otro',         icon: '📦', dotClass: 'otro' },
 ]
 
 function FacturaDetalle({ fac, onBack }) {
-  const total = fac.items.reduce((s, g) => s + calcTotal(g), 0)
+  const total  = fac.items.reduce((s, g) => s + calcTotal(g), 0)
   const sorted = [...fac.items].sort((a, b) => a.fecha.localeCompare(b.fecha))
 
   return (
@@ -45,7 +45,7 @@ function FacturaDetalle({ fac, onBack }) {
         {sorted.map((g, i) => {
           const cat    = catOf(g.categoria)
           const isMtro = g.porMetro ?? esPorMetro(g.unidad)
-          const total  = calcTotal(g)
+          const tot    = calcTotal(g)
           return (
             <div key={g.id} className="fac-det-row">
               <div className="fac-det-row-num">{i + 1}</div>
@@ -60,7 +60,7 @@ function FacturaDetalle({ fac, onBack }) {
                 </div>
                 <div className="fac-det-row-date">{fmtDate(g.fecha)}</div>
               </div>
-              <div className="fac-det-row-total">{COP(total)}</div>
+              <div className="fac-det-row-total">{COP(tot)}</div>
             </div>
           )
         })}
@@ -97,54 +97,72 @@ function buildFacturas(gastos) {
 }
 
 export default function Facturas({ gastos }) {
-  const [tabCat,   setTabCat]   = useState('materiales')
-  const [search,   setSearch]   = useState('')
-  const [selected, setSelected] = useState(null)
+  const [tabCat,     setTabCat]     = useState('materiales')
+  const [search,     setSearch]     = useState('')
+  const [filterMat,  setFilterMat]  = useState('')
+  const [fechaDesde, setFechaDesde] = useState('')
+  const [fechaHasta, setFechaHasta] = useState('')
+  const [selected,   setSelected]   = useState(null)
 
-  const gastosFiltrados = useMemo(
+  // Gastos de la categoría activa
+  const gastosCat = useMemo(
     () => gastos.filter(g => g.categoria === tabCat),
     [gastos, tabCat]
   )
 
+  // Materiales únicos dentro de la categoría activa (para el selector)
+  const materialesUnicos = useMemo(() => {
+    const set = new Set(gastosCat.map(g => g.descripcion))
+    return [...set].sort()
+  }, [gastosCat])
+
+  // Aplicar filtros de material y fecha antes de agrupar por factura
+  const gastosFiltrados = useMemo(() => gastosCat.filter(g => {
+    if (filterMat  && g.descripcion !== filterMat)  return false
+    if (fechaDesde && g.fecha < fechaDesde)          return false
+    if (fechaHasta && g.fecha > fechaHasta)          return false
+    return true
+  }), [gastosCat, filterMat, fechaDesde, fechaHasta])
+
   const facturas = useMemo(() => buildFacturas(gastosFiltrados), [gastosFiltrados])
 
+  // Buscar por número de factura sobre las ya filtradas
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase()
     if (!q) return facturas
     return facturas.filter(f => !f.esSinFactura && f.factura.toLowerCase().includes(q))
   }, [facturas, search])
 
-  const conNumero = facturas.filter(f => !f.esSinFactura).length
-
-  const selFac = selected ? facturas.find(f => f.factura === selected) : null
+  const conNumero  = facturas.filter(f => !f.esSinFactura).length
+  const hayFiltros = search || filterMat || fechaDesde || fechaHasta
 
   function handleTabChange(id) {
-    setTabCat(id)
-    setSelected(null)
-    setSearch('')
+    setTabCat(id); setSelected(null)
+    setSearch(''); setFilterMat(''); setFechaDesde(''); setFechaHasta('')
   }
+  function limpiar() { setSearch(''); setFilterMat(''); setFechaDesde(''); setFechaHasta('') }
+
+  const selFac  = selected ? facturas.find(f => f.factura === selected) : null
+  const tabInfo = TABS.find(t => t.id === tabCat)
 
   if (selFac) return <FacturaDetalle fac={selFac} onBack={() => setSelected(null)} />
 
-  const tabInfo = TABS.find(t => t.id === tabCat)
-
   return (
     <div className="page-wrap">
+
       {/* Tabs de categoría */}
       <div className="fac-tabs">
         {TABS.map(t => (
-          <button
-            key={t.id}
+          <button key={t.id}
             className={`fac-tab fac-tab-${t.dotClass} ${tabCat === t.id ? 'fac-tab-active' : ''}`}
-            onClick={() => handleTabChange(t.id)}
-          >
+            onClick={() => handleTabChange(t.id)}>
             <span className="fac-tab-icon">{t.icon}</span>
             <span className="fac-tab-label">{t.label}</span>
           </button>
         ))}
       </div>
 
-      {gastosFiltrados.length === 0 ? (
+      {gastosCat.length === 0 ? (
         <div className="empty">
           <div className="empty-icon">{tabInfo.icon}</div>
           <h3>Sin registros de {tabInfo.label.toLowerCase()}</h3>
@@ -152,15 +170,32 @@ export default function Facturas({ gastos }) {
         </div>
       ) : (
         <>
-          <div className="search-wrap" style={{ paddingLeft: 16, paddingRight: 16, paddingBottom: 14 }}>
-            <div className="search-wrap-inner">
+          {/* Barra de filtros compacta */}
+          <div className="fac-filters">
+            <div className="fac-filter-search">
               <span className="search-icon">🔍</span>
-              <input className="search-input" placeholder="Buscar por número de factura..."
+              <input className="search-input" placeholder="N° factura..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
+
+            <select className={`filter-select fac-filter-sel ${filterMat ? 'active' : ''}`}
+              value={filterMat} onChange={e => setFilterMat(e.target.value)}>
+              <option value="">Todos los {tabInfo.label.toLowerCase()}</option>
+              {materialesUnicos.map(m => <option key={m} value={m}>{m}</option>)}
+            </select>
+
+            <div className="fac-filter-dates">
+              <input type="date" className="filter-date" value={fechaDesde} onChange={e => setFechaDesde(e.target.value)} />
+              <span className="filter-date-sep">→</span>
+              <input type="date" className="filter-date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
+            </div>
+
+            {hayFiltros && (
+              <button className="chip chip-clear" onClick={limpiar}>✕</button>
+            )}
           </div>
 
-          <div className="pg-toolbar" style={{ paddingTop: 0 }}>
+          <div className="pg-toolbar" style={{ paddingTop: 4 }}>
             <span className="reg-count">
               {conNumero} factura{conNumero !== 1 ? 's' : ''}
               {facturas.some(f => f.esSinFactura) && ` · ${facturas.find(f => f.esSinFactura)?.items.length} sin número`}
@@ -171,7 +206,7 @@ export default function Facturas({ gastos }) {
             <div className="empty">
               <div className="empty-icon">🔍</div>
               <h3>Sin resultados</h3>
-              <p>No hay facturas con ese número.</p>
+              <p>Intenta con otros filtros.</p>
             </div>
           ) : (
             <div className="fac-list">

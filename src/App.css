@@ -1014,6 +1014,38 @@ body {
 .fac-tab-obra.fac-tab-active { background: var(--obra-bg); color: var(--obra); border-color: var(--obra); }
 .fac-tab-otro.fac-tab-active { background: var(--otro-bg); color: var(--otro); border-color: var(--otro); }
 
+/* Filtros compactos en Facturas */
+.fac-filters {
+  display: flex; flex-direction: column; gap: 8px;
+  padding: 0 16px 14px;
+}
+@media (min-width: 768px) {
+  .fac-filters {
+    flex-direction: row; align-items: center; padding: 0 0 14px; gap: 10px;
+  }
+  .fac-filter-search { width: 180px; flex-shrink: 0; }
+  .fac-filter-sel    { flex: 1; min-width: 0; }
+  .fac-filter-dates  { flex-shrink: 0; }
+}
+
+.fac-filter-search {
+  display: flex; align-items: center; gap: 8px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  padding: 8px 12px; background: var(--card);
+}
+.fac-filter-search .search-icon { font-size: 14px; }
+.fac-filter-search .search-input {
+  border: none; background: transparent; outline: none;
+  font-size: 13px; color: var(--text); width: 100%;
+}
+
+.fac-filter-sel { font-size: 13px; padding: 9px 32px 9px 12px; }
+
+.fac-filter-dates {
+  display: flex; align-items: center; gap: 6px;
+}
+.fac-filter-dates .filter-date { font-size: 12px; padding: 8px 8px; }
+
 .fac-list { display: flex; flex-direction: column; gap: 10px; padding: 0 16px; }
 @media (min-width: 768px) { .fac-list { padding: 0; } }
 
