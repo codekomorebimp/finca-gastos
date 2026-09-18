@@ -33,6 +33,38 @@ export const updateGasto = ({ id, ...data }) =>
 export const deleteGasto = (id) => deleteDoc(doc(db, COLL, id))
 
 /**
+ * Migración de datos: asigna catalogoId a todos los gastos de materiales
+ * que aún no tienen ese campo, emparejando por descripcion == item.nombre.
+ * Retorna cuántos gastos fueron actualizados.
+ */
+export const migrarCatalogoIds = async (catalogoItems) => {
+  const snap = await getDocs(collection(db, COLL))
+
+  // Solo materiales sin vínculo
+  const sinId = snap.docs.filter((d) => {
+    const g = d.data()
+    return g.categoria === 'materiales' && !g.catalogoId
+  })
+
+  if (sinId.length === 0) return 0
+
+  // Mapa: nombre del material → id del catálogo
+  const mapa = {}
+  catalogoItems.forEach((item) => { mapa[item.nombre] = item.id })
+
+  const batch = writeBatch(db)
+  let count = 0
+
+  sinId.forEach((d) => {
+    const cid = mapa[d.data().descripcion]
+    if (cid) { batch.update(d.ref, { catalogoId: cid }); count++ }
+  })
+
+  if (count > 0) await batch.commit()
+  return count
+}
+
+/**
  * Sincroniza en lote todos los gastos vinculados al material.
  *
  * Busca por dos criterios:

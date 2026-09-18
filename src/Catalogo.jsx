@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { subscribeCatalogo, addMaterial, updateMaterial, deleteMaterial } from './services/catalogo'
-import { syncGastosFromCatalogo } from './services/gastos'
+import { syncGastosFromCatalogo, migrarCatalogoIds } from './services/gastos'
 import { CATALOGO as DEFAULTS, UNIDADES_MAT, COP } from './data'
 
 const EMPTY_FORM = { nombre: '', unidad: 'unidad', precio: '', porMetro: false }
@@ -15,6 +15,7 @@ export default function Catalogo() {
   const [confirmId, setConfirmId] = useState(null)
   const [syncMsg, setSyncMsg]     = useState(null)
   const seedingRef                = useRef(false)
+  const migratedRef               = useRef(false)
 
   useEffect(() =>
     subscribeCatalogo((data) => {
@@ -30,6 +31,20 @@ export default function Catalogo() {
       setLoading(false)
     }),
   [])
+
+  // Migración automática: asigna catalogoId a gastos viejos (una sola vez por sesión)
+  useEffect(() => {
+    if (items.length === 0 || migratedRef.current) return
+    migratedRef.current = true
+    migrarCatalogoIds(items)
+      .then((n) => {
+        if (n > 0) {
+          setSyncMsg(`🔗 ${n} gasto${n !== 1 ? 's' : ''} vinculado${n !== 1 ? 's' : ''} al catálogo automáticamente`)
+          setTimeout(() => setSyncMsg(null), 5000)
+        }
+      })
+      .catch(console.error)
+  }, [items])
 
   async function seedDefaults() {
     _seeded = true
