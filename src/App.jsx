@@ -3,12 +3,15 @@ import './App.css'
 import { CATS, PRESUPUESTO, COP, calcTotal, emptyForm } from './data'
 import { subscribeGastos, addGasto, updateGasto, deleteGasto } from './services/gastos'
 import { subscribeCatalogo } from './services/catalogo'
+import { subscribeCatalogoObra } from './services/catalogoObra'
+import { subscribeObraEjecutada } from './services/obraEjecutada'
 import { getSession, saveSession, logout, isAdmin } from './auth'
 import { loginFirestore, seedAuthData } from './services/usuarios'
 import Dashboard from './Dashboard'
 import Registros from './Registros'
 import Catalogo  from './Catalogo'
 import Facturas  from './Facturas'
+import ObraPage  from './ObraPage'
 import Modal     from './Modal'
 import LoginPage from './Login'
 
@@ -40,6 +43,7 @@ function Sidebar({ tab, setTab, gastos, onAdd, session, onLogout }) {
       { id: 'registros', icon: '📋', label: 'Registros', badge: gastos.length },
       { id: 'facturas',  icon: '🧾', label: 'Facturas',  badge: null },
       { id: 'catalogo',  icon: '🧱', label: 'Catálogo',  badge: null },
+      { id: 'obra',      icon: '👷', label: 'Obra',      badge: null },
     ] : []),
   ]
 
@@ -97,6 +101,8 @@ export default function App() {
   const [session, setSession]       = useState(() => getSession())
   const [gastos, setGastos]         = useState([])
   const [catalogo, setCatalogo]     = useState([])
+  const [catalogoObra, setCatalogoObra]     = useState([])
+  const [obraEjecutada, setObraEjecutada]   = useState([])
   const [loading, setLoading]       = useState(true)
   const [tab, setTab]               = useState('dashboard')
   const [modal, setModal]           = useState(null)
@@ -108,6 +114,12 @@ export default function App() {
   useEffect(() => subscribeGastos((data) => { setGastos(data); setLoading(false) }), [])
   useEffect(() => subscribeCatalogo((data) =>
     setCatalogo(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
+  ), [])
+  useEffect(() => subscribeCatalogoObra((data) =>
+    setCatalogoObra(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
+  ), [])
+  useEffect(() => subscribeObraEjecutada((data) =>
+    setObraEjecutada(data.sort((a, b) => b.fecha.localeCompare(a.fecha)))
   ), [])
 
   const admin        = isAdmin(session)
@@ -147,6 +159,7 @@ export default function App() {
     registros: { title: 'Registros', sub: 'Todos los gastos registrados' },
     facturas:  { title: 'Facturas',  sub: 'Gastos agrupados por factura' },
     catalogo:  { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
+    obra:      { title: 'Mano de obra', sub: 'Catálogo y obra ejecutada vs pagada' },
   }
 
   if (!session) return <LoginPage onLogin={handleLogin} />
@@ -199,7 +212,7 @@ export default function App() {
             </div>
           ) : (
             <>
-              {tab === 'dashboard' && <Dashboard gastos={gastos} />}
+              {tab === 'dashboard' && <Dashboard gastos={gastos} obraEjecutada={obraEjecutada} />}
               {tab === 'registros' && admin && (
                 <Registros gastos={gastos} onEdit={openEdit}
                   onDelete={(id) => setConfirmId(id)}
@@ -207,6 +220,7 @@ export default function App() {
               )}
               {tab === 'facturas'  && admin && <Facturas gastos={gastos} />}
               {tab === 'catalogo'  && admin && <Catalogo />}
+              {tab === 'obra'      && admin && <ObraPage catalogoObra={catalogoObra} obraEjecutada={obraEjecutada} />}
             </>
           )}
         </div>
@@ -231,6 +245,10 @@ export default function App() {
               <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`} onClick={() => setTab('catalogo')}>
                 <span className="nav-icon">🧱</span>
                 <span className="nav-label">Catálogo</span>
+              </button>
+              <button className={`nav-btn ${tab === 'obra' ? 'nav-active' : ''}`} onClick={() => setTab('obra')}>
+                <span className="nav-icon">👷</span>
+                <span className="nav-label">Obra</span>
               </button>
             </>
           )}

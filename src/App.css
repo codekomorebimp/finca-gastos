@@ -243,8 +243,8 @@ body {
   padding: 8px 0; color: var(--text-muted); transition: color 0.15s;
 }
 .nav-btn.nav-active { color: var(--mat); }
-.nav-icon  { font-size: 20px; line-height: 1; }
-.nav-label { font-size: 10px; font-weight: 600; letter-spacing: 0.2px; }
+.nav-icon  { font-size: 18px; line-height: 1; }
+.nav-label { font-size: 9px; font-weight: 600; letter-spacing: 0.2px; }
 .nav-fab {
   width: 52px; height: 52px; border-radius: 50%;
   background: linear-gradient(135deg, #1d4ed8, #3b82f6);
@@ -1194,4 +1194,44 @@ body {
 @media (min-width: 768px) { .fac-det-footer { margin: 0; } }
 .fac-footer-label { }
 .fac-footer-total { font-size: 20px; font-weight: 900; color: var(--text); font-variant-numeric: tabular-nums; }
+
+/* ── OBRA tab style ─────────────────────────────────── */
+.fac-tab-obra.fac-tab-active { border-color: #d97706; color: #d97706; background: #fffbeb; }
+.fac-tab-obra.fac-tab-active .fac-tab-icon { background: #fef3c7; }
+
+/* Obra ejecutada — totales y preview */
+.obra-total-banner {
+  display: flex; justify-content: space-between; align-items: center;
+  margin: 0 16px 12px; padding: 10px 16px;
+  background: #fffbeb; border: 1.5px solid #fde68a; border-radius: var(--radius);
+}
+@media (min-width: 768px) { .obra-total-banner { margin: 0 0 12px; } }
+.obra-total-label { font-size: 13px; font-weight: 600; color: #92400e; }
+.obra-total-val   { font-size: 17px; font-weight: 800; color: #d97706; font-variant-numeric: tabular-nums; }
+
+.obra-calc-preview {
+  padding: 10px 14px; background: #f0fdf4; border: 1px solid #bbf7d0;
+  border-radius: 8px; font-size: 13px; color: #166534;
+}
+
+/* Balance card en Dashboard */
+.obra-balance-card {
+  background: var(--card); border: 1.5px solid var(--border);
+  border-radius: var(--radius); padding: 16px 20px; margin-bottom: 16px;
+}
+.obra-balance-title {
+  font-size: 13px; font-weight: 700; color: var(--text-soft);
+  text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px;
+}
+.obra-balance-row {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4px 0;
+}
+.obra-balance-label { font-size: 14px; color: var(--text-soft); }
+.obra-balance-num   { font-size: 14px; font-weight: 700; color: var(--text); font-variant-numeric: tabular-nums; }
+.obra-balance-sep   { border-top: 1px solid var(--border); margin: 8px 0; }
+.obra-balance-result .obra-balance-label { font-weight: 600; color: var(--text); }
+.obra-balance-big   { font-size: 20px; font-weight: 900; }
+.obra-balance-big.rojo  { color: #dc2626; }
+.obra-balance-big.verde { color: #16a34a; }
 

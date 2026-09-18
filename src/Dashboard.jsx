@@ -79,7 +79,42 @@ function BudgetCard({ totalGastado }) {
   )
 }
 
-export default function Dashboard({ gastos }) {
+/* ── Balance mano de obra ── */
+function ObraBalanceCard({ obraEjecutada, gastos }) {
+  const ejecutado = obraEjecutada.reduce((s, r) => s + r.precio * r.cantidad, 0)
+  const pagado    = gastos.filter(g => g.categoria === 'mano_obra').reduce((s, g) => s + calcTotal(g), 0)
+  const balance   = ejecutado - pagado
+
+  if (ejecutado === 0 && pagado === 0) return null
+
+  const balClass = balance > 0 ? 'rojo' : balance < 0 ? 'verde' : ''
+  const balLabel = balance > 0
+    ? 'Debes a los trabajadores'
+    : balance < 0
+    ? 'Pagaste de más'
+    : 'Paz y salvo ✓'
+
+  return (
+    <div className="obra-balance-card">
+      <div className="obra-balance-title">👷 Balance mano de obra</div>
+      <div className="obra-balance-row">
+        <span className="obra-balance-label">Ejecutado</span>
+        <span className="obra-balance-num">{COP(ejecutado)}</span>
+      </div>
+      <div className="obra-balance-row">
+        <span className="obra-balance-label">Pagado</span>
+        <span className="obra-balance-num">{COP(pagado)}</span>
+      </div>
+      <div className="obra-balance-sep" />
+      <div className="obra-balance-row obra-balance-result">
+        <span className="obra-balance-label">{balLabel}</span>
+        <span className={`obra-balance-num obra-balance-big ${balClass}`}>{COP(Math.abs(balance))}</span>
+      </div>
+    </div>
+  )
+}
+
+export default function Dashboard({ gastos, obraEjecutada = [] }) {
   const totalGastado = useMemo(() => gastos.reduce((s, g) => s + calcTotal(g), 0), [gastos])
 
   const porCategoria = useMemo(() =>
@@ -147,6 +182,7 @@ export default function Dashboard({ gastos }) {
   return (
     <div className="db-wrap">
       <BudgetCard totalGastado={totalGastado} />
+      <ObraBalanceCard obraEjecutada={obraEjecutada} gastos={gastos} />
 
       {/* Stats desktop */}
       <div className="db-stats-grid">
