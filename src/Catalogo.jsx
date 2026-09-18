@@ -49,12 +49,19 @@ export default function Catalogo() {
     if (mode === 'add') {
       await addMaterial(data)
     } else {
+      // nombre original antes de editar (para encontrar gastos legacy por descripción)
+      const originalNombre = items.find((i) => i.id === form.id)?.nombre ?? form.nombre
       await updateMaterial({ id: form.id, ...data })
-      const n = await syncGastosFromCatalogo(form.id, data)
-      if (n > 0) {
-        setSyncMsg(`✅ ${n} gasto${n !== 1 ? 's' : ''} actualizado${n !== 1 ? 's' : ''}`)
-        setTimeout(() => setSyncMsg(null), 3500)
+      try {
+        const n = await syncGastosFromCatalogo(form.id, originalNombre, data)
+        setSyncMsg(n > 0
+          ? `✅ ${n} gasto${n !== 1 ? 's' : ''} actualizado${n !== 1 ? 's' : ''}`
+          : '✅ Material actualizado (sin gastos vinculados aún)')
+      } catch (err) {
+        setSyncMsg('⚠️ Material actualizado, error al sincronizar gastos')
+        console.error('syncGastosFromCatalogo:', err)
       }
+      setTimeout(() => setSyncMsg(null), 4000)
     }
     setModal(null)
   }
