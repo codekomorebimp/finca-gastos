@@ -198,7 +198,6 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
         <div className="filter-group">
           <div className="filter-label">Buscar</div>
           <div className="reg-search-box">
-            <span className="search-icon" style={{ fontSize: 13 }}>🔍</span>
             <input className="search-input" placeholder="Descripción, factura..."
               value={search} onChange={e => setSearch(e.target.value)} />
           </div>

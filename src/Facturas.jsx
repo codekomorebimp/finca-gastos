@@ -173,7 +173,6 @@ export default function Facturas({ gastos }) {
           {/* Barra de filtros compacta */}
           <div className="fac-filters">
             <div className="fac-filter-search">
-              <span className="search-icon">🔍</span>
               <input className="search-input" placeholder="N° factura..."
                 value={search} onChange={e => setSearch(e.target.value)} />
             </div>
