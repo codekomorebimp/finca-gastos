@@ -3,11 +3,13 @@ import './App.css'
 import { CATS, PRESUPUESTO, COP, calcTotal, emptyForm } from './data'
 import { subscribeGastos, addGasto, updateGasto, deleteGasto } from './services/gastos'
 import { subscribeCatalogo } from './services/catalogo'
+import { getSession, logout, isAdmin } from './auth'
 import Dashboard from './Dashboard'
 import Registros from './Registros'
 import Catalogo  from './Catalogo'
 import Facturas  from './Facturas'
 import Modal     from './Modal'
+import LoginPage from './Login'
 
 function exportCSV(gastos) {
   const cols = ['# Factura','Descripcion','Categoria','Unidad','Precio Unitario','Metros','Cantidad','Total','Fecha','Notas']
@@ -24,17 +26,20 @@ function exportCSV(gastos) {
   URL.revokeObjectURL(url)
 }
 
-function Sidebar({ tab, setTab, gastos, onAdd }) {
+function Sidebar({ tab, setTab, gastos, onAdd, session, onLogout }) {
+  const admin        = isAdmin(session)
   const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
-  const restante  = PRESUPUESTO - totalGastado
-  const pct       = Math.min((totalGastado / PRESUPUESTO) * 100, 100)
-  const fillClass = pct > 90 ? 'over' : pct > 70 ? 'warn' : ''
+  const restante     = PRESUPUESTO - totalGastado
+  const pct          = Math.min((totalGastado / PRESUPUESTO) * 100, 100)
+  const fillClass    = pct > 90 ? 'over' : pct > 70 ? 'warn' : ''
 
   const NAV = [
     { id: 'dashboard', icon: '📊', label: 'Dashboard', badge: null },
-    { id: 'registros', icon: '📋', label: 'Registros', badge: gastos.length },
-    { id: 'facturas',  icon: '🧾', label: 'Facturas',  badge: null },
-    { id: 'catalogo',  icon: '🧱', label: 'Catálogo',  badge: null },
+    ...(admin ? [
+      { id: 'registros', icon: '📋', label: 'Registros', badge: gastos.length },
+      { id: 'facturas',  icon: '🧾', label: 'Facturas',  badge: null },
+      { id: 'catalogo',  icon: '🧱', label: 'Catálogo',  badge: null },
+    ] : []),
   ]
 
   return (
@@ -68,26 +73,45 @@ function Sidebar({ tab, setTab, gastos, onAdd }) {
         ))}
       </div>
 
-      <button className="sidebar-add-btn" onClick={onAdd}>+ Agregar gasto</button>
+      {admin && <button className="sidebar-add-btn" onClick={onAdd}>+ Agregar gasto</button>}
+
+      <div className="sidebar-user">
+        <div className="sidebar-user-info">
+          <span className="sidebar-user-name">{session.nombre}</span>
+          <span className={`sidebar-user-role ${session.role}`}>{session.role === 'admin' ? 'Admin' : 'Vendedor'}</span>
+        </div>
+        <button className="sidebar-logout-btn" onClick={onLogout} title="Cerrar sesión">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+            <polyline points="16 17 21 12 16 7"/>
+            <line x1="21" y1="12" x2="9" y2="12"/>
+          </svg>
+        </button>
+      </div>
     </aside>
   )
 }
 
 export default function App() {
-  const [gastos, setGastos]     = useState([])
-  const [catalogo, setCatalogo] = useState([])
-  const [loading, setLoading]   = useState(true)
-  const [tab, setTab]           = useState('dashboard')
-  const [modal, setModal]       = useState(null)
-  const [confirmId, setConfirmId] = useState(null)
+  const [session, setSession]       = useState(() => getSession())
+  const [gastos, setGastos]         = useState([])
+  const [catalogo, setCatalogo]     = useState([])
+  const [loading, setLoading]       = useState(true)
+  const [tab, setTab]               = useState('dashboard')
+  const [modal, setModal]           = useState(null)
+  const [confirmId, setConfirmId]   = useState(null)
 
   useEffect(() => subscribeGastos((data) => { setGastos(data); setLoading(false) }), [])
   useEffect(() => subscribeCatalogo((data) =>
     setCatalogo(data.sort((a, b) => a.nombre.localeCompare(b.nombre)))
   ), [])
 
+  const admin        = isAdmin(session)
   const totalGastado = useMemo(() => gastos.reduce((s,g) => s+calcTotal(g), 0), [gastos])
   const restante     = PRESUPUESTO - totalGastado
+
+  function handleLogin(s) { setSession(s); setTab('dashboard') }
+  function handleLogout() { logout(); setSession(null) }
 
   function openAdd()   { setModal({ mode: 'add', form: emptyForm('materiales') }) }
   function openEdit(g) { setModal({ mode: 'edit', form: { ...g, metros: g.metros ?? '', cantidad: g.cantidad ?? '' } }) }
@@ -109,9 +133,11 @@ export default function App() {
     catalogo:  { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
   }
 
+  if (!session) return <LoginPage onLogin={handleLogin} />
+
   return (
     <div className="app-shell">
-      <Sidebar tab={tab} setTab={setTab} gastos={gastos} onAdd={openAdd} />
+      <Sidebar tab={tab} setTab={setTab} gastos={gastos} onAdd={openAdd} session={session} onLogout={handleLogout} />
 
       <div className="main-area">
         {/* Header móvil */}
@@ -126,15 +152,22 @@ export default function App() {
               {restante >= 0 ? `${COP(restante)} restante` : 'Excedido'}
             </div>
           </div>
+          <button className="mobile-logout-btn" onClick={handleLogout} title="Cerrar sesión">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+          </button>
         </div>
 
         {/* Header desktop */}
         <div className="page-header">
           <div>
-            <div className="page-title">{PAGE_TITLES[tab].title}</div>
-            <div className="page-subtitle">{PAGE_TITLES[tab].sub}</div>
+            <div className="page-title">{PAGE_TITLES[tab]?.title}</div>
+            <div className="page-subtitle">{PAGE_TITLES[tab]?.sub}</div>
           </div>
-          {tab === 'registros' && (
+          {tab === 'registros' && admin && (
             <button className="btn-csv-desk" onClick={() => exportCSV(gastos)}>
               📊 Exportar CSV
             </button>
@@ -151,40 +184,40 @@ export default function App() {
           ) : (
             <>
               {tab === 'dashboard' && <Dashboard gastos={gastos} />}
-              {tab === 'registros' && (
+              {tab === 'registros' && admin && (
                 <Registros gastos={gastos} onEdit={openEdit}
                   onDelete={(id) => setConfirmId(id)}
                   onExport={() => exportCSV(gastos)} />
               )}
-              {tab === 'facturas'  && <Facturas gastos={gastos} />}
-              {tab === 'catalogo'  && <Catalogo />}
+              {tab === 'facturas'  && admin && <Facturas gastos={gastos} />}
+              {tab === 'catalogo'  && admin && <Catalogo />}
             </>
           )}
         </div>
 
         {/* Nav móvil */}
         <nav className="bottom-nav">
-          <button className={`nav-btn ${tab === 'dashboard' ? 'nav-active' : ''}`}
-            onClick={() => setTab('dashboard')}>
+          <button className={`nav-btn ${tab === 'dashboard' ? 'nav-active' : ''}`} onClick={() => setTab('dashboard')}>
             <span className="nav-icon">📊</span>
             <span className="nav-label">Dashboard</span>
           </button>
-          <button className={`nav-btn ${tab === 'registros' ? 'nav-active' : ''}`}
-            onClick={() => setTab('registros')}>
-            <span className="nav-icon">📋</span>
-            <span className="nav-label">Registros</span>
-          </button>
-          <button className="nav-fab" onClick={openAdd}>+</button>
-          <button className={`nav-btn ${tab === 'facturas' ? 'nav-active' : ''}`}
-            onClick={() => setTab('facturas')}>
-            <span className="nav-icon">🧾</span>
-            <span className="nav-label">Facturas</span>
-          </button>
-          <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`}
-            onClick={() => setTab('catalogo')}>
-            <span className="nav-icon">🧱</span>
-            <span className="nav-label">Catálogo</span>
-          </button>
+          {admin && (
+            <>
+              <button className={`nav-btn ${tab === 'registros' ? 'nav-active' : ''}`} onClick={() => setTab('registros')}>
+                <span className="nav-icon">📋</span>
+                <span className="nav-label">Registros</span>
+              </button>
+              <button className="nav-fab" onClick={openAdd}>+</button>
+              <button className={`nav-btn ${tab === 'facturas' ? 'nav-active' : ''}`} onClick={() => setTab('facturas')}>
+                <span className="nav-icon">🧾</span>
+                <span className="nav-label">Facturas</span>
+              </button>
+              <button className={`nav-btn ${tab === 'catalogo' ? 'nav-active' : ''}`} onClick={() => setTab('catalogo')}>
+                <span className="nav-icon">🧱</span>
+                <span className="nav-label">Catálogo</span>
+              </button>
+            </>
+          )}
         </nav>
       </div>
 
@@ -192,8 +225,7 @@ export default function App() {
         onDelete={() => setConfirmId(modal.form.id)} gastos={gastos} catalogo={catalogo} />
 
       {confirmId && (
-        <div className="confirm-overlay"
-          onClick={(e) => { if (e.target===e.currentTarget) setConfirmId(null) }}>
+        <div className="confirm-overlay" onClick={(e) => { if (e.target===e.currentTarget) setConfirmId(null) }}>
           <div className="confirm-box">
             <div className="confirm-icon-wrap">
               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
