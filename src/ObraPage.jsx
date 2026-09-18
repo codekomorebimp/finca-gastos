@@ -231,18 +231,18 @@ export default function ObraPage({ catalogoObra, obraEjecutada }) {
     <div style={{ minHeight: '100%' }}>
 
       {/* Internal tabs */}
-      <div className="fac-tabs">
+      <div className="fac-tabs" style={{ marginTop: 20 }}>
         <button
           className={`fac-tab fac-tab-obra ${activeTab === 'ejecutado' ? 'fac-tab-active' : ''}`}
           onClick={() => setActiveTab('ejecutado')}>
           <span className="fac-tab-icon">📐</span>
-          <span className="fac-tab-label">Obra ejecutada</span>
+          <span className="fac-tab-label">Avance de obra</span>
         </button>
         <button
           className={`fac-tab fac-tab-obra ${activeTab === 'catalogo' ? 'fac-tab-active' : ''}`}
           onClick={() => setActiveTab('catalogo')}>
           <span className="fac-tab-icon">📋</span>
-          <span className="fac-tab-label">Catálogo</span>
+          <span className="fac-tab-label">Tipos de trabajo</span>
         </button>
       </div>
 
@@ -314,20 +314,15 @@ export default function ObraPage({ catalogoObra, obraEjecutada }) {
                 <div className="form-body">
                   <div className="field">
                     <label>Trabajo</label>
-                    <div className="obra-picker">
+                    <select required value={modal.form.catalogoObraId}
+                      onChange={e => ch('catalogoObraId', e.target.value)}>
+                      <option value="">Selecciona un trabajo...</option>
                       {catalogoObra.map(c => (
-                        <button key={c.id} type="button"
-                          className={`obra-pick-card ${modal.form.catalogoObraId === c.id ? 'obra-pick-active' : ''}`}
-                          onClick={() => ch('catalogoObraId', c.id)}>
-                          <span className="obra-pick-name">{c.nombre}</span>
-                          <span className="obra-pick-price">{COP(c.precio)}</span>
-                          <span className="obra-pick-unit">/ {c.unidad}</span>
-                        </button>
+                        <option key={c.id} value={c.id}>
+                          {c.nombre}  ({COP(c.precio)} / {c.unidad})
+                        </option>
                       ))}
-                    </div>
-                    <input type="text" required readOnly tabIndex={-1}
-                      value={modal.form.catalogoObraId}
-                      style={{ position: 'absolute', opacity: 0, pointerEvents: 'none', height: 0 }} />
+                    </select>
                   </div>
                   <div className="field-row">
                     <div className="field">

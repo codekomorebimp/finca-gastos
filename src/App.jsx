@@ -159,7 +159,7 @@ export default function App() {
     registros: { title: 'Registros', sub: 'Todos los gastos registrados' },
     facturas:  { title: 'Facturas',  sub: 'Gastos agrupados por factura' },
     catalogo:  { title: 'Catálogo',  sub: 'Materiales y precios de referencia' },
-    obra:      { title: 'Mano de obra', sub: 'Catálogo y obra ejecutada vs pagada' },
+    obra:      { title: 'Mano de obra', sub: 'Avance de obra ejecutada y tipos de trabajo' },
   }
 
   if (!session) return <LoginPage onLogin={handleLogin} />
