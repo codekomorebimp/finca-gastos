@@ -1,5 +1,6 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { CATS, COP, calcTotal, fmtDate, catOf, esPorMetro } from './data'
+import { getFotos, subirFoto, eliminarFoto } from './services/facturaFotos'
 
 const TABS = [
   { id: 'materiales', label: 'Materiales',   icon: '🧱', dotClass: 'mat'  },
@@ -8,8 +9,37 @@ const TABS = [
 ]
 
 function FacturaDetalle({ fac, onBack }) {
-  const total  = fac.items.reduce((s, g) => s + calcTotal(g), 0)
-  const sorted = [...fac.items].sort((a, b) => a.fecha.localeCompare(b.fecha))
+  const total   = fac.items.reduce((s, g) => s + calcTotal(g), 0)
+  const sorted  = [...fac.items].sort((a, b) => a.fecha.localeCompare(b.fecha))
+  const fileRef = useRef()
+
+  const [fotos,      setFotos]      = useState([])
+  const [uploading,  setUploading]  = useState(false)
+  const [fotoGrande, setFotoGrande] = useState(null)
+
+  useEffect(() => {
+    if (!fac.esSinFactura) getFotos(fac.factura).then(setFotos)
+  }, [fac.factura, fac.esSinFactura])
+
+  async function handleFile(e) {
+    const file = e.target.files[0]
+    if (!file) return
+    setUploading(true)
+    try {
+      const url = await subirFoto(fac.factura, file)
+      setFotos(prev => [...prev, url])
+    } catch (err) {
+      console.error(err)
+    }
+    setUploading(false)
+    e.target.value = ''
+  }
+
+  async function handleEliminar(url) {
+    if (!confirm('¿Eliminar esta foto?')) return
+    await eliminarFoto(fac.factura, url)
+    setFotos(prev => prev.filter(f => f !== url))
+  }
 
   return (
     <div className="page-wrap">
@@ -70,6 +100,41 @@ function FacturaDetalle({ fac, onBack }) {
         <span className="fac-footer-label">Total factura</span>
         <span className="fac-footer-total">{COP(total)}</span>
       </div>
+
+      {/* Fotos de la factura */}
+      {!fac.esSinFactura && (
+        <div className="fac-fotos">
+          <div className="fac-fotos-header">
+            <span className="fac-fotos-title">📷 Fotos de la factura</span>
+            <input ref={fileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleFile} />
+            <button className="fac-fotos-btn" onClick={() => fileRef.current.click()} disabled={uploading}>
+              {uploading ? <span className="fac-fotos-spinner" /> : '+ Agregar foto'}
+            </button>
+          </div>
+
+          {fotos.length === 0 && !uploading && (
+            <div className="fac-fotos-empty">Sin fotos adjuntas</div>
+          )}
+
+          <div className="fac-fotos-grid">
+            {fotos.map((url, i) => (
+              <div key={i} className="fac-foto-wrap">
+                <img src={url} className="fac-foto-img" alt={`Factura ${i+1}`}
+                  onClick={() => setFotoGrande(url)} />
+                <button className="fac-foto-del" onClick={() => handleEliminar(url)}>✕</button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox */}
+      {fotoGrande && (
+        <div className="fac-lightbox" onClick={() => setFotoGrande(null)}>
+          <img src={fotoGrande} className="fac-lightbox-img" alt="Foto factura" />
+          <button className="fac-lightbox-close">✕</button>
+        </div>
+      )}
 
       <div style={{ height: 24 }} />
     </div>
