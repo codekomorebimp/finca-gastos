@@ -50,7 +50,7 @@ function ItemForm({ item, onChange, catalogo, gastos, factura }) {
             <select value={item.catalogoId ? item.descripcion : ''} onChange={e => {
               const found = catalogo.find(c => c.nombre === e.target.value)
               if (!found) return
-              onChange({ ...item, catalogoId: found.id, descripcion: found.nombre, unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' })
+              onChange({ ...item, catalogoId: found.id, descripcion: '', unidad: found.unidad, porMetro: !!found.porMetro, precio_unitario: String(found.precio), metros: '', cantidad: '' })
             }}>
               <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
               {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}
@@ -185,7 +185,7 @@ export default function Modal({ modal, setModal, onSubmit, onBatchSubmit, onDele
                   <select value={form.catalogoId ? form.descripcion : ''} onChange={e => {
                     const item = catalogo.find(c => c.nombre === e.target.value)
                     if (!item) return
-                    setModal(m => ({ ...m, form: { ...m.form, catalogoId: item.id, descripcion: item.nombre, unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' } }))
+                    setModal(m => ({ ...m, form: { ...m.form, catalogoId: item.id, descripcion: '', unidad: item.unidad, porMetro: !!item.porMetro, precio_unitario: String(item.precio), metros: '', cantidad: '' } }))
                   }}>
                     <option value="">{catalogo.length === 0 ? 'Sin materiales en Catálogo' : 'Selecciona un material...'}</option>
                     {catalogo.map(c => <option key={c.id} value={c.nombre}>{c.nombre}  ({COP(c.precio)} / {c.unidad})</option>)}

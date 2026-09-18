@@ -180,16 +180,9 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
 
   return (
     <div className="reg-wrap">
-      <div className="search-wrap">
-        <div className="search-wrap-inner">
-          <span className="search-icon">🔍</span>
-          <input className="search-input" placeholder="Buscar descripción, notas, factura..."
-            value={search} onChange={e => setSearch(e.target.value)} />
-        </div>
-      </div>
-
       <div className="reg-filters">
-        <div className="filter-group">
+        {/* Fila 1: Categoría (ancho completo) */}
+        <div className="filter-group reg-filter-cat">
           <div className="filter-label">Categoría</div>
           <div className="filter-chips">
             <button className={`chip ${filterCat === 'all' ? 'chip-active-all' : ''}`} onClick={() => setFilterCat('all')}>Todos</button>
@@ -200,6 +193,20 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
             ))}
           </div>
         </div>
+
+        {/* Fila 2: Búsqueda con limpiar integrado */}
+        <div className="filter-group">
+          <div className="filter-label">Buscar</div>
+          <div className="reg-search-box">
+            <span className="search-icon" style={{ fontSize: 13 }}>🔍</span>
+            <input className="search-input" placeholder="Descripción, factura..."
+              value={search} onChange={e => setSearch(e.target.value)} />
+            {hayFiltros && (
+              <button className="reg-clear-btn" onClick={limpiar} title="Limpiar filtros">✕</button>
+            )}
+          </div>
+        </div>
+
         {materialesUnicos.length > 0 && (
           <div className="filter-group">
             <div className="filter-label">Material</div>
@@ -226,7 +233,6 @@ export default function Registros({ gastos, onEdit, onDelete, onExport }) {
             <input type="date" className="filter-date" value={fechaHasta} onChange={e => setFechaHasta(e.target.value)} />
           </div>
         </div>
-        {hayFiltros && <button className="chip chip-clear" onClick={limpiar}>✕ Limpiar filtros</button>}
       </div>
 
       <div className="reg-toolbar">
