@@ -57,8 +57,14 @@ body {
 }
 
 @media (min-width: 768px) {
+  .app-shell { height: 100svh; overflow: hidden; }
   .sidebar { display: flex; }
-  .main-area { margin-left: var(--sidebar-w); padding-bottom: 0; }
+  .main-area {
+    margin-left: var(--sidebar-w);
+    padding-bottom: 0;
+    height: 100svh;
+    overflow-y: auto;
+  }
   .bottom-nav { display: none !important; }
 }
 
