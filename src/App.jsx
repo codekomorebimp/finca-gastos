@@ -135,6 +135,11 @@ export default function App() {
     setModal(null)
   }
 
+  function handleBatchSubmit(items) {
+    items.forEach(f => addGasto(f))
+    setModal(null)
+  }
+
   function doDelete() { deleteGasto(confirmId); setConfirmId(null); setModal(null) }
 
   const PAGE_TITLES = {
@@ -233,6 +238,7 @@ export default function App() {
       </div>
 
       <Modal modal={modal} setModal={setModal} onSubmit={handleSubmit}
+        onBatchSubmit={handleBatchSubmit}
         onDelete={() => setConfirmId(modal.form.id)} gastos={gastos} catalogo={catalogo} />
 
       {confirmId && (
