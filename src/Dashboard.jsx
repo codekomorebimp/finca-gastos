@@ -90,28 +90,19 @@ export default function Dashboard({ gastos }) {
     })).filter((d) => d.value > 0),
   [gastos])
 
-  const porMaterial = useMemo(() => {
-    const map = {}
-    gastos.filter((g) => g.categoria === 'materiales').forEach((g) => {
-      const k = g.descripcion
-      map[k] = (map[k] || 0) + calcTotal(g)
-    })
-    return Object.entries(map).map(([name, value]) => ({ name, value }))
-      .sort((a, b) => b.value - a.value).slice(0, 10)
-  }, [gastos])
-
-  const cantidades = useMemo(() => {
+  const materialesDetalle = useMemo(() => {
     const map = {}
     gastos.filter((g) => g.categoria === 'materiales').forEach((g) => {
       const k = g.descripcion
       if (!map[k]) map[k] = { name: k, qty: 0, unidad: g.unidad, gasto: 0 }
-      const qty = esPorMetro(g.unidad)
+      const isMtro = g.porMetro ?? esPorMetro(g.unidad)
+      const qty = isMtro
         ? +(g.metros || 0) * Math.max(+(g.cantidad || 1), 1)
         : +(g.cantidad || 0)
       map[k].qty += qty
       map[k].gasto += calcTotal(g)
     })
-    return Object.values(map).sort((a, b) => b.gasto - a.gasto)
+    return Object.values(map).sort((a, b) => b.gasto - a.gasto).slice(0, 10)
   }, [gastos])
 
   const porManoObra = useMemo(() => {
@@ -124,7 +115,7 @@ export default function Dashboard({ gastos }) {
       .sort((a, b) => b.value - a.value).slice(0, 8)
   }, [gastos])
 
-  const maxMat  = porMaterial[0]?.value  || 1
+  const maxMat  = materialesDetalle[0]?.gasto || 1
   const maxObra = porManoObra[0]?.value  || 1
 
   if (gastos.length === 0) {
@@ -229,35 +220,18 @@ export default function Dashboard({ gastos }) {
         </div>
       )}
 
-      {/* Gasto por material */}
-      {porMaterial.length > 0 && (
+      {/* Materiales: gasto + cantidad combinados */}
+      {materialesDetalle.length > 0 && (
         <div className="db-chart-card db-chart-full db-chart-blue">
-          <div className="db-chart-title">🧱 Gasto por material</div>
-          {porMaterial.map((d, i) => (
-            <HBar key={d.name} name={d.name} value={d.value} maxVal={maxMat}
-              color={`hsl(${220 - i * 12}, 75%, ${52 + i * 2}%)`} />
-          ))}
-        </div>
-      )}
-
-      {/* Cantidades compradas */}
-      {cantidades.length > 0 && (
-        <div className="db-chart-card db-chart-full db-chart-teal">
-          <div className="db-chart-title">📦 Cantidades compradas</div>
-          <div className="db-qty-list">
-            {cantidades.map((d) => (
-              <div key={d.name} className="db-qty-row">
-                <div className="db-qty-name">{d.name}</div>
-                <div className="db-qty-right">
-                  <span className="db-qty-val">
-                    {d.qty % 1 === 0 ? d.qty.toLocaleString('es-CO') : d.qty.toFixed(2)}
-                    <span className="db-qty-unit"> {d.unidad}</span>
-                  </span>
-                  <span className="db-qty-gasto">{COP(d.gasto)}</span>
-                </div>
-              </div>
-            ))}
-          </div>
+          <div className="db-chart-title">🧱 Materiales — gasto y cantidad</div>
+          {materialesDetalle.map((d, i) => {
+            const qtyStr = d.qty % 1 === 0 ? d.qty.toLocaleString('es-CO') : d.qty.toFixed(2)
+            return (
+              <HBar key={d.name} name={d.name} value={d.gasto} maxVal={maxMat}
+                color={`hsl(${220 - i * 12}, 75%, ${52 + i * 2}%)`}
+                sub={`${qtyStr} ${d.unidad}`} />
+            )
+          })}
         </div>
       )}
 
